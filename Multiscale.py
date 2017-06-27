@@ -22,12 +22,14 @@ pp = pprint.PrettyPrinter(indent=4)
 min_pop_size = 3
 
 exc_color = occ.L23_PRINCIPAL_CELL
-exc2_color = occ.L23_PRINCIPAL_CELL
+exc2_color = occ.L23_PRINCIPAL_CELL_2
 inh_color = occ.L23_INTERNEURON
+inh_color = occ.L23_INTERNEURON_2
 
 exc_color = '0 0 1'
 exc2_color = '0 1 0'
 inh_color = '1 0 0'
+inh2_color = '1 1 0'
 
 
 def scale_pop_size(baseline, scale):
@@ -36,6 +38,7 @@ def scale_pop_size(baseline, scale):
 
 def generate(scalePops = 1,
              percentage_exc_detailed=0,
+             percentage_inh_detailed=0,
              scalex=1,
              scaley=1,
              scalez=1,
@@ -57,12 +60,13 @@ def generate(scalePops = 1,
     num_exc = scale_pop_size(80,scalePops)
     num_exc2  = int(math.ceil(num_exc*percentage_exc_detailed/100.0))
     num_exc -= num_exc2
+    
     num_inh = scale_pop_size(40,scalePops)
+    num_inh2  = int(math.ceil(num_inh*percentage_inh_detailed/100.0))
+    num_inh -= num_inh2
     
     nml_doc, network = oc.generate_network(reference)
     
-    #exc_cell_id = 'AllenHH_479704527'
-    #oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/AllenHH/AllenHH_479704527.cell.nml', exc_cell_id)
     exc_cell_id = 'AllenHH_480351780'
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/AllenHH/AllenHH_480351780.cell.nml', exc_cell_id)
     
@@ -70,12 +74,13 @@ def generate(scalePops = 1,
     inh_cell_id = 'AllenHH_485058595'
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/AllenHH/AllenHH_485058595.cell.nml', inh_cell_id)
 
-    #oc.include_opencortex_cell(nml_doc, 'AllenInstituteCellTypesDB_HH/HH_477127614.cell.nml')
-    #oc.include_opencortex_cell(nml_doc, 'AllenInstituteCellTypesDB_HH/HH_476686112.cell.nml')
     if percentage_exc_detailed>0:
         exc2_cell_id = 'L23_Retuned'
         oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/SmithEtAl2013/L23_Retuned.cell.nml', exc2_cell_id)
-        #oc.include_opencortex_cell(nml_doc, 'L23Pyr_SmithEtAl2013/L23_NoHotSpot.cell.nml')
+
+    if percentage_inh_detailed>0:
+        inh2_cell_id = 'cNAC187_L23_NBC_9d37c4b1f8_0_0'
+        oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/BBP/cNAC187_L23_NBC_9d37c4b1f8_0_0.cell.nml', inh2_cell_id)
     
 
     xDim = 700*scalex
@@ -133,7 +138,19 @@ def generate(scalePops = 1,
                                                   num_inh,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color=inh_color)
+                                                  color=inh_color)           
+    allInh = [popInh]
+    
+    if num_inh2>0:
+        popInh2 = oc.add_population_in_rectangular_region(network,
+                                                  'popInh2',
+                                                  inh2_cell_id,
+                                                  num_inh2,
+                                                  xs,ys,zs,
+                                                  xDim,yDim,zDim,
+                                                  color=inh2_color)
+                                                  
+        allInh.append(popInh2)
 
 
     #####   Projections
@@ -146,6 +163,8 @@ def generate(scalePops = 1,
                 proj = oc.add_probabilistic_projection(network, "proj0",
                                                 pop1, pop2,
                                                 synAmpa1.id, 0.5, delay = global_delay)
+                                                
+            
 
             proj = oc.add_probabilistic_projection(network, "proj1",
                                             pop1, popInh,
@@ -191,8 +210,13 @@ def generate(scalePops = 1,
         
         if num_exc2>0:
             exc2_traces = '%s_%s_v.dat'%(network.id,popExc2.id)
-            save_v = {exc_traces:[], inh_traces:[], exc2_traces:[]}
-            plot_v = {popExc.id:[],popExc2.id:[],popInh.id:[]}
+            save_v[exc2_traces] = []
+            plot_v[popExc2.id] = []
+            
+        if num_inh2>0:
+            inh2_traces = '%s_%s_v.dat'%(network.id,popInh2.id)
+            save_v[inh2_traces] = []
+            plot_v[popInh2.id] = []
         
         
         for i in range(min(max_in_pop_to_plot_and_save,num_exc)):
@@ -206,6 +230,10 @@ def generate(scalePops = 1,
         for i in range(min(max_in_pop_to_plot_and_save,num_inh)):
             plot_v[popInh.id].append("%s/%i/%s/v"%(popInh.id,i,popInh.component))
             save_v[inh_traces].append("%s/%i/%s/v"%(popInh.id,i,popInh.component))
+            
+        for i in range(min(max_in_pop_to_plot_and_save,num_inh2)):
+            plot_v[popInh2.id].append("%s/%i/%s/v"%(popInh2.id,i,popInh2.component))
+            save_v[inh2_traces].append("%s/%i/%s/v"%(popInh2.id,i,popInh2.component))
             
         gen_spike_saves_for_all_somas = run_in_simulator!='jNeuroML_NetPyNE'
             
@@ -359,13 +387,15 @@ if __name__ == '__main__':
             
             duration = 1000
             scalePops = .25
-            percentage_exc_detailed = 100
+            percentage_exc_detailed = 0
+            percentage_inh_detailed = 0.01
+            run_in_simulator='jNeuroML_NEURON'
 
 
         Rexc = np.zeros((len(g_rng), len(i_rng)))
         Rinh = np.zeros((len(g_rng), len(i_rng)))
         
-        desc = '%s_%s_%sms_%se2'%(run_in_simulator,scalePops, duration,percentage_exc_detailed)
+        desc = '%s_%s_%sms_%se2_%si2'%(run_in_simulator,scalePops, duration,percentage_exc_detailed,percentage_inh_detailed)
         
         count=1
         for i1, g in enumerate(g_rng):
@@ -375,13 +405,16 @@ if __name__ == '__main__':
                 for h in trace_highlight:
                     if h[0]==g and h[1]==i:
                         highlight = True
+                        
                 print(" Run %s of %s: scale=%s; g=%s; i=%s (highlighting: %s)"%(count, len(g_rng)*len(i_rng), scalePops, g, i, highlight))
+                
                 info = generate(scalePops = scalePops,
                     scalex=2,
                     scalez=2,
                     duration = duration,
                     max_in_pop_to_plot_and_save = 5,
                     percentage_exc_detailed = percentage_exc_detailed,
+                    percentage_inh_detailed = percentage_inh_detailed,
                     global_delay = 2,
                     ratio_inh_exc = g,
                     input_rate=i,
@@ -399,6 +432,7 @@ if __name__ == '__main__':
                     tr_shade_e=1
                     tr_shade_e2=1
                     tr_shade_i=1
+                    tr_shade_i2=1
                     for vs in traces.keys():
                         if vs!='t':
                             all_v.append([v*1000.0 for v in traces[vs]])
@@ -408,6 +442,9 @@ if __name__ == '__main__':
                                 tr_shade_e2*=0.8
                             elif 'Exc' in vs:
                                 colours.append((1-tr_shade_e,1-tr_shade_e,1))
+                                tr_shade_e*=0.8
+                            elif 'Inh2' in vs:
+                                colours.append((1,1,1-tr_shade_i))
                                 tr_shade_e*=0.8
                             else:
                                 colours.append((1,1-tr_shade_i,1-tr_shade_i))
