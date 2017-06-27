@@ -4,7 +4,12 @@ for testing purposes
 '''
 
 import opencortex.core as oc
+
+import opencortex.utils.color as occ
+
 import sys
+import math
+
 import numpy as np
 import pylab as pl
 from pyneuroml import pynml
@@ -34,13 +39,14 @@ def generate(scalePops = 1,
              max_in_pop_to_plot_and_save = 5,
              format='xml',
              run_in_simulator = None,
-             num_processors = 1):
+             num_processors = 1,
+             target_dir='./temp/'):
                  
     reference = ("Multiscale__g%s__i%s"%(ratio_inh_exc,input_rate)).replace('.','_')
                     
 
     num_exc = scale_pop_size(80,scalePops)
-    num_exc2  = int(0.5 + num_exc*percentage_exc_detailed/100.0)
+    num_exc2  = int(math.ceil(num_exc*percentage_exc_detailed/100.0))
     num_exc -= num_exc2
     num_inh = scale_pop_size(40,scalePops)
     
@@ -61,13 +67,13 @@ def generate(scalePops = 1,
         oc.include_opencortex_cell(nml_doc, 'L23Pyr_SmithEtAl2013/L23_NoHotSpot.cell.nml')
     
 
-    xDim = 1000*scalex
-    yDim = 300*scaley
-    zDim = 1000*scalez
+    xDim = 700*scalex
+    yDim = 200*scaley
+    zDim = 700*scalez
 
-    xs = -200
-    ys = -150
-    zs = 100
+    xs = -1*xDim/2
+    ys = -1*yDim/2
+    zs = -1*zDim/2
 
     #####   Synapses
     
@@ -96,7 +102,7 @@ def generate(scalePops = 1,
                                                   num_exc,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color='0 0 1')
+                                                  color=occ.L23_PRINCIPAL_CELL)
 
     popExc2 = oc.add_population_in_rectangular_region(network,
                                                   'popExc2',
@@ -104,7 +110,7 @@ def generate(scalePops = 1,
                                                   num_exc2,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color='0 1 0')
+                                                  color=occ.L23_PRINCIPAL_CELL_2)
                                                   
     allExc = [popExc,popExc2]
 
@@ -114,7 +120,7 @@ def generate(scalePops = 1,
                                                   num_inh,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color='1 0 0')
+                                                  color=occ.L23_INTERNEURON)
 
 
     #####   Projections
@@ -153,7 +159,6 @@ def generate(scalePops = 1,
 
     #####   Save NeuroML and LEMS Simulation files      
     
-    target_dir='./temp/'
 
     nml_file_name = '%s.net.%s'%(network.id,'nml.h5' if format == 'hdf5' else 'nml')
     oc.save_network(nml_doc, 
@@ -322,11 +327,11 @@ if __name__ == '__main__':
         percentage_exc_detailed = 0
         
         quick = False
-        quick = True
+        #quick = True
         
         g_rng = np.arange(.5, 4.5, .5)
         i_rng = np.arange(50, 400, 50)
-        trace_highlight = [(1.5,150)]
+        trace_highlight = [(2,150)]
         
         if quick:
             g_rng = [2]
@@ -418,5 +423,6 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 500,
                  input_rate = 250,
-                 scalePops=.2,
-                 percentage_exc_detailed=0)
+                 scalePops=1,
+                 percentage_exc_detailed=0.1,
+                 target_dir='./NeuroML2/')

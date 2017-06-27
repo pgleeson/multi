@@ -1,2 +1,5 @@
 /temp/*
 /*.png
+/NeuroML2/*.pov
+/NeuroML2/*.ini
+/NeuroML2/*.png
