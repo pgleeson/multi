@@ -28,7 +28,7 @@
     <Include file="Multiscale__g1_5__i250/pas.channel.nml"/>
     <Include file="Multiscale__g1_5__i250/CaDynamics.nml"/>
     <Include file="Multiscale__g1_5__i250/AllenHH_485058595.cell.nml"/>
-    <Include file="Multiscale__g1_5__i250/L23_NoHotSpot.cell.nml"/>
+    <Include file="Multiscale__g1_5__i250/L23_Retuned.cell.nml"/>
     <Include file="Multiscale__g1_5__i250/ca.channel.nml"/>
     <Include file="Multiscale__g1_5__i250/it.channel.nml"/>
     <Include file="Multiscale__g1_5__i250/kca.channel.nml"/>
@@ -48,7 +48,7 @@
         </Display>
         
         <Display id="popExc2" title="Plots of popExc2" timeScale="1ms" xmin="-50.0" xmax="550.0" ymin="-80" ymax="40">
-            <Line id="popExc2_0_L23_NoHotSpot_v" quantity="popExc2/0/L23_NoHotSpot/v" scale="1mV" color="#3193ca" timeScale="1ms"/>
+            <Line id="popExc2_0_L23_Retuned_v" quantity="popExc2/0/L23_Retuned/v" scale="1mV" color="#3193ca" timeScale="1ms"/>
         </Display>
         
         <Display id="popExc" title="Plots of popExc" timeScale="1ms" xmin="-50.0" xmax="550.0" ymin="-80" ymax="40">
@@ -68,7 +68,7 @@
         </OutputFile>
         
         <OutputFile id="Multiscale__g1_5__i250_popExc2_v_dat" fileName="Multiscale__g1_5__i250_popExc2_v.dat">
-            <OutputColumn id="popExc2_0_L23_NoHotSpot_v" quantity="popExc2/0/L23_NoHotSpot/v"/> 
+            <OutputColumn id="popExc2_0_L23_Retuned_v" quantity="popExc2/0/L23_Retuned/v"/> 
         </OutputFile>
         
         <OutputFile id="Multiscale__g1_5__i250_popExc_v_dat" fileName="Multiscale__g1_5__i250_popExc_v.dat">
@@ -162,7 +162,7 @@
         </EventOutputFile>
         
         <EventOutputFile id="Spikes_file__popExc2" fileName="Sim_Multiscale__g1_5__i250.popExc2.spikes" format="ID_TIME">
-            <EventSelection id="0" select="popExc2/0/L23_NoHotSpot" eventPort="spike"/> 
+            <EventSelection id="0" select="popExc2/0/L23_Retuned" eventPort="spike"/> 
         </EventOutputFile>
         
         <EventOutputFile id="Spikes_file__popInh" fileName="Sim_Multiscale__g1_5__i250.popInh.spikes" format="ID_TIME">

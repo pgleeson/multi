@@ -352,10 +352,10 @@ if __name__ == '__main__':
         if quick:
             g_rng = [2]
             #g_rng = [2,3,4]
-            i_rng = [150]
-            i_rng = [250,300]
+            i_rng = [250]
+            #i_rng = [250,300]
             #i_rng = [100,150,200]
-            trace_highlight = [(2,150)]
+            trace_highlight = [(g_rng[0],i_rng[0])]
             
             duration = 1000
             scalePops = .25
@@ -364,6 +364,8 @@ if __name__ == '__main__':
 
         Rexc = np.zeros((len(g_rng), len(i_rng)))
         Rinh = np.zeros((len(g_rng), len(i_rng)))
+        
+        desc = '%s_%s_%sms_%se2'%(run_in_simulator,scalePops, duration,percentage_exc_detailed)
         
         count=1
         for i1, g in enumerate(g_rng):
@@ -399,8 +401,8 @@ if __name__ == '__main__':
                     tr_shade_i=1
                     for vs in traces.keys():
                         if vs!='t':
-                            all_v.append(traces[vs])
-                            all_t.append(traces['t'])
+                            all_v.append([v*1000.0 for v in traces[vs]])
+                            all_t.append([t*1000.0 for t in traces['t']])
                             if 'Exc2' in vs:
                                 colours.append((1-tr_shade_e2,1,1-tr_shade_e2))
                                 tr_shade_e2*=0.8
@@ -413,7 +415,13 @@ if __name__ == '__main__':
                                 
                     
                     print colours
-                    pynml.generate_plot(all_t,all_v,"Sim g=%s, i=%s"%(g,i),colors=colours,show_plot_already=False)
+                    pynml.generate_plot(all_t, all_v, 
+                                        "Sim g=%s, i=%s"%(g,i),
+                                        colors=colours,
+                                        show_plot_already=False,
+                                        xaxis = 'Time (ms)',            # x axis legend
+                                        yaxis = 'Membrane potential (mV)',   # y axis legend
+                                        save_figure_to='%s_traces.png'%desc)
                 count+=1
                     
                 
@@ -432,7 +440,7 @@ if __name__ == '__main__':
         pl.subplots_adjust(wspace=.3, hspace=.3)
 
 
-        pl.savefig('%s_%s_%sms.png'%(run_in_simulator,scalePops, duration), bbox_inches='tight')
+        pl.savefig("%s_rates.png"%desc, bbox_inches='tight')
         print("Finished: "+info)
         pl.show()
         
@@ -466,6 +474,6 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 500,
                  input_rate = 250,
-                 scalePops=.5,
+                 scalePops=1,
                  percentage_exc_detailed=0.1,
                  target_dir='./NeuroML2/')

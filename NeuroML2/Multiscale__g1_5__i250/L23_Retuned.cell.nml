@@ -2,7 +2,7 @@
 <neuroml xmlns="http://www.neuroml.org/schema/neuroml2"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta4.xsd"
-    id = "L23_NoHotSpot">
+    id = "L23_Retuned">
 
   <notes> NeuroML 2 file generated from ModelView by: NEURON -- Release 7.4 (1351:8f462ea7e030) 2015-07-21
           Authors: Michael Hines, Sushil Kambampati and Padraig Gleeson,
@@ -17,7 +17,7 @@
     <include href="na.channel.nml"/>
     <include href="pas.channel.nml"/>
 
-  <cell id="L23_NoHotSpot">
+  <cell id="L23_Retuned">
     <notes>Cell: Cell0 exported from NEURON ModelView</notes>
     <morphology id="morphology">
 <!-- Section: soma (segmentGroup: soma) which has 2 3D points, so 1 segment(s)-->
@@ -16730,9 +16730,9 @@
 
         <channelDensity ionChannel="na" id="na_dends"  condDensity = "0.008 S_per_cm2" ion="na" segmentGroup="dendrite_group"  erev="60 mV" />
 
-        <channelDensity ionChannel="na" id="na_soma"  condDensity = "0.1 S_per_cm2" ion="na" segmentGroup="soma_group" erev="60 mV" />
+        <channelDensity ionChannel="na" id="na_soma"  condDensity = "0.5 S_per_cm2" ion="na" segmentGroup="soma_group" erev="60 mV" />
 
-        <channelDensity ionChannel="na" id="na_axon"  condDensity = "0.1 S_per_cm2" ion="na" segmentGroup="axon_group" erev="60 mV" />
+        <channelDensity ionChannel="na" id="na_axon"  condDensity = "0.5 S_per_cm2" ion="na" segmentGroup="axon_group" erev="60 mV" />
 
         <channelDensity ionChannel="it" id="it_dends" condDensity = "0.00015 S_per_cm2" ion="ca" segmentGroup="dendrite_group" erev="140.67523 mV" />       
 
