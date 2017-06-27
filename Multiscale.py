@@ -45,10 +45,20 @@ def generate(scalePops = 1,
     num_inh = scale_pop_size(40,scalePops)
     
     nml_doc, network = oc.generate_network(reference)
+    
+    #exc_cell_id = 'AllenHH_479704527'
+    #oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/AllenHH/AllenHH_479704527.cell.nml', exc_cell_id)
+    exc_cell_id = 'AllenHH_480351780'
+    oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/AllenHH/AllenHH_480351780.cell.nml', exc_cell_id)
+    
+    
+    inh_cell_id = 'AllenHH_485058595'
+    oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/AllenHH/AllenHH_485058595.cell.nml', inh_cell_id)
 
-    oc.include_opencortex_cell(nml_doc, 'AllenInstituteCellTypesDB_HH/HH_477127614.cell.nml')
-    oc.include_opencortex_cell(nml_doc, 'AllenInstituteCellTypesDB_HH/HH_476686112.cell.nml')
-    oc.include_opencortex_cell(nml_doc, 'L23Pyr_SmithEtAl2013/L23_NoHotSpot.cell.nml')
+    #oc.include_opencortex_cell(nml_doc, 'AllenInstituteCellTypesDB_HH/HH_477127614.cell.nml')
+    #oc.include_opencortex_cell(nml_doc, 'AllenInstituteCellTypesDB_HH/HH_476686112.cell.nml')
+    if percentage_exc_detailed>0:
+        oc.include_opencortex_cell(nml_doc, 'L23Pyr_SmithEtAl2013/L23_NoHotSpot.cell.nml')
     
 
     xDim = 1000*scalex
@@ -82,7 +92,7 @@ def generate(scalePops = 1,
 
     popExc = oc.add_population_in_rectangular_region(network,
                                                   'popExc',
-                                                  'HH_477127614',
+                                                  exc_cell_id,
                                                   num_exc,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
@@ -100,7 +110,7 @@ def generate(scalePops = 1,
 
     popInh = oc.add_population_in_rectangular_region(network,
                                                   'popInh',
-                                                  'HH_476686112',
+                                                  inh_cell_id,
                                                   num_inh,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
@@ -151,7 +161,7 @@ def generate(scalePops = 1,
                     validate=(format=='xml'),
                     format = format,
                     target_dir=target_dir)
-            
+        
 
     if format=='xml':
         
@@ -160,6 +170,9 @@ def generate(scalePops = 1,
         exc2_traces = '%s_%s_v.dat'%(network.id,popExc2.id)
         inh_traces = '%s_%s_v.dat'%(network.id,popInh.id)
         save_v = {exc_traces:[], inh_traces:[], exc2_traces:[]}
+        if num_exc2==0:
+            save_v = {exc_traces:[], inh_traces:[]}
+            plot_v = {popExc.id:[],popInh.id:[]}
         
         
         for i in range(min(max_in_pop_to_plot_and_save,num_exc)):
@@ -306,10 +319,10 @@ if __name__ == '__main__':
         run_in_simulator='jNeuroML_NetPyNE'
         num_processors = 12
         scalePops = 1
-        percentage_exc_detailed = 20
+        percentage_exc_detailed = 0
         
         quick = False
-        #quick = True
+        quick = True
         
         g_rng = np.arange(.5, 4.5, .5)
         i_rng = np.arange(50, 400, 50)
@@ -317,12 +330,12 @@ if __name__ == '__main__':
         
         if quick:
             g_rng = [2]
-            #g_rng = [2,3,4]
+            g_rng = [2,3,4]
             i_rng = [150]
-            #i_rng = [100,150,200]
+            i_rng = [100,150,200]
             trace_highlight = [(2,150)]
             duration = 1000
-            percentage_exc_detailed =20
+            percentage_exc_detailed = 0
             scalePops = .5
 
 
@@ -406,4 +419,4 @@ if __name__ == '__main__':
                  duration = 500,
                  input_rate = 250,
                  scalePops=.2,
-                 percentage_exc_detailed=50)
+                 percentage_exc_detailed=0)
