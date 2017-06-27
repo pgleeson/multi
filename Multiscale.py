@@ -21,6 +21,14 @@ pp = pprint.PrettyPrinter(indent=4)
 
 min_pop_size = 3
 
+exc_color = occ.L23_PRINCIPAL_CELL
+exc2_color = occ.L23_PRINCIPAL_CELL
+inh_color = occ.L23_INTERNEURON
+
+exc_color = '0 0 1'
+exc2_color = '0 1 0'
+inh_color = '1 0 0'
+
 
 def scale_pop_size(baseline, scale):
     return max(min_pop_size, int(baseline*scale))
@@ -38,11 +46,12 @@ def generate(scalePops = 1,
              global_delay = 2,
              max_in_pop_to_plot_and_save = 5,
              format='xml',
+             suffix='',
              run_in_simulator = None,
              num_processors = 1,
              target_dir='./temp/'):
                  
-    reference = ("Multiscale__g%s__i%s"%(ratio_inh_exc,input_rate)).replace('.','_')
+    reference = ("Multiscale__g%s__i%s%s"%(ratio_inh_exc,input_rate,suffix)).replace('.','_')
                     
 
     num_exc = scale_pop_size(80,scalePops)
@@ -64,7 +73,9 @@ def generate(scalePops = 1,
     #oc.include_opencortex_cell(nml_doc, 'AllenInstituteCellTypesDB_HH/HH_477127614.cell.nml')
     #oc.include_opencortex_cell(nml_doc, 'AllenInstituteCellTypesDB_HH/HH_476686112.cell.nml')
     if percentage_exc_detailed>0:
-        oc.include_opencortex_cell(nml_doc, 'L23Pyr_SmithEtAl2013/L23_NoHotSpot.cell.nml')
+        exc2_cell_id = 'L23_Retuned'
+        oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/SmithEtAl2013/L23_Retuned.cell.nml', exc2_cell_id)
+        #oc.include_opencortex_cell(nml_doc, 'L23Pyr_SmithEtAl2013/L23_NoHotSpot.cell.nml')
     
 
     xDim = 700*scalex
@@ -102,17 +113,19 @@ def generate(scalePops = 1,
                                                   num_exc,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color=occ.L23_PRINCIPAL_CELL)
+                                                  color=exc_color)                 
+    allExc = [popExc]
 
-    popExc2 = oc.add_population_in_rectangular_region(network,
+    if num_exc2>0:
+        popExc2 = oc.add_population_in_rectangular_region(network,
                                                   'popExc2',
-                                                  'L23_NoHotSpot',
+                                                  exc2_cell_id,
                                                   num_exc2,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color=occ.L23_PRINCIPAL_CELL_2)
+                                                  color=exc2_color)
                                                   
-    allExc = [popExc,popExc2]
+        allExc.append(popExc2)
 
     popInh = oc.add_population_in_rectangular_region(network,
                                                   'popInh',
@@ -120,7 +133,7 @@ def generate(scalePops = 1,
                                                   num_inh,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color=occ.L23_INTERNEURON)
+                                                  color=inh_color)
 
 
     #####   Projections
@@ -170,14 +183,16 @@ def generate(scalePops = 1,
 
     if format=='xml':
         
-        plot_v = {popExc.id:[],popExc2.id:[],popInh.id:[]}
+        plot_v = {popExc.id:[],popInh.id:[]}
+        
         exc_traces = '%s_%s_v.dat'%(network.id,popExc.id)
-        exc2_traces = '%s_%s_v.dat'%(network.id,popExc2.id)
         inh_traces = '%s_%s_v.dat'%(network.id,popInh.id)
-        save_v = {exc_traces:[], inh_traces:[], exc2_traces:[]}
-        if num_exc2==0:
-            save_v = {exc_traces:[], inh_traces:[]}
-            plot_v = {popExc.id:[],popInh.id:[]}
+        save_v = {exc_traces:[], inh_traces:[]}
+        
+        if num_exc2>0:
+            exc2_traces = '%s_%s_v.dat'%(network.id,popExc2.id)
+            save_v = {exc_traces:[], inh_traces:[], exc2_traces:[]}
+            plot_v = {popExc.id:[],popExc2.id:[],popInh.id:[]}
         
         
         for i in range(min(max_in_pop_to_plot_and_save,num_exc)):
@@ -319,15 +334,16 @@ if __name__ == '__main__':
              
     elif '-paramSweep' in sys.argv:     
         
-        duration = 1000
         run_in_simulator='jNeuroML_NEURON'
         run_in_simulator='jNeuroML_NetPyNE'
-        num_processors = 12
-        scalePops = 1
+        num_processors = 18
+        
+        duration = 500
+        scalePops = .5
         percentage_exc_detailed = 0
         
         quick = False
-        #quick = True
+        quick = True
         
         g_rng = np.arange(.5, 4.5, .5)
         i_rng = np.arange(50, 400, 50)
@@ -335,13 +351,15 @@ if __name__ == '__main__':
         
         if quick:
             g_rng = [2]
-            g_rng = [2,3,4]
+            #g_rng = [2,3,4]
             i_rng = [150]
-            i_rng = [100,150,200]
+            i_rng = [250,300]
+            #i_rng = [100,150,200]
             trace_highlight = [(2,150)]
+            
             duration = 1000
-            percentage_exc_detailed = 0
-            scalePops = .5
+            scalePops = .25
+            percentage_exc_detailed = 100
 
 
         Rexc = np.zeros((len(g_rng), len(i_rng)))
@@ -418,11 +436,36 @@ if __name__ == '__main__':
         print("Finished: "+info)
         pl.show()
         
+    elif '-test' in sys.argv:   
+        
+        generate(ratio_inh_exc=1.5,
+                 duration = 1000,
+                 input_rate = 250,
+                 scalePops=1,
+                 suffix="A",
+                 percentage_exc_detailed=0,
+                 target_dir='./NeuroML2/')
+        
+        generate(ratio_inh_exc=1.5,
+                 duration = 1000,
+                 input_rate = 250,
+                 scalePops=1,
+                 suffix="B",
+                 percentage_exc_detailed=0.1,
+                 target_dir='./NeuroML2/')
+        
+        generate(ratio_inh_exc=1.5,
+                 duration = 1000,
+                 input_rate = 250,
+                 scalePops=1,
+                 suffix="C",
+                 percentage_exc_detailed=100,
+                 target_dir='./NeuroML2/')
 
     else:
         generate(ratio_inh_exc=1.5,
                  duration = 500,
                  input_rate = 250,
-                 scalePops=1,
+                 scalePops=.5,
                  percentage_exc_detailed=0.1,
                  target_dir='./NeuroML2/')
