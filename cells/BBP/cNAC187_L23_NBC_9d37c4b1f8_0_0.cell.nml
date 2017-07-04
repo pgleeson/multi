@@ -10,22 +10,28 @@
     <include href="Ca_LVAst.channel.nml"></include>
     <include href="SK_E2.channel.nml"></include>
     <include href="K_Pst.channel.nml"></include>
-    <include href="CaDynamics.nml"></include>
     <include href="CaDynamics_E2_NML2.nml"></include>
     <include href="Ca.channel.nml"></include>
     <cell id="cNAC187_L23_NBC_9d37c4b1f8_0_0">
         <notes>
 
-Export of a cell model obtained from the BBP Neocortical Microcircuit Collaboration Portal into NeuroML2
+Export of a cell model obtained from the BBP NeocorticalMicrocircuit Collaboration Portal into NeuroML2
+
+For more information on this cell model see: https://bbp.epfl.ch/nmc-portal/microcircuit#/metype/L23_NBC_cNAC/details
 
 ******************************************************
 *  This export to NeuroML2 has not yet been fully validated!!
 *  Use with caution!!
 ******************************************************
 
-For more information on this cell model see: https://bbp.epfl.ch/nmc-portal/microcircuit#/metype/L23_NBC_cNAC/details
-
-</notes>
+        </notes>
+        <property tag="BBP:layer" value="L2"/>
+        <property tag="BBP:me-type" value="L23_NBC_cNAC"/>
+        <property tag="BBP:m-type" value="L23_NBC"/>
+        <property tag="BBP:cell name" value="cNAC187_L23_NBC_2_C300898C-I3_-_Scale_x1.000_y0.950_z1.000_-_Clone_20"/>
+        <property tag="BBP:gid" value="160268"/>
+        <property tag="BBP:e-type" value="cNAC"/>
+        <property tag="BBP:morphology" value="C300898C-I3_-_Scale_x1.000_y0.950_z1.000_-_Clone_20"/>
         <morphology id="morphology">
             <segment id="0" name="Seg0_soma_0">
                 <proximal x="-7.117090e+00" y="7.306390e+00" z="-9.677760e-01" diameter="2.36862"/>
@@ -5311,6 +5317,16 @@ For more information on this cell model see: https://bbp.epfl.ch/nmc-portal/micr
             </segmentGroup>
             <segmentGroup id="somatic">
                 <include segmentGroup="soma_0"/>
+            </segmentGroup>
+            <segmentGroup id="soma_group">
+                <include segmentGroup="somatic"/>
+            </segmentGroup>
+            <segmentGroup id="axon_group">
+                <include segmentGroup="axonal"/>
+            </segmentGroup>
+            <segmentGroup id="dendrite_group">
+                <include segmentGroup="basal"/>
+                <include segmentGroup="apical"/>
             </segmentGroup>
         </morphology>
         <biophysicalProperties id="biophys">

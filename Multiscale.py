@@ -29,7 +29,7 @@ inh_color = occ.L23_INTERNEURON_2
 exc_color = '0 0 1'
 exc2_color = '0 1 0'
 inh_color = '1 0 0'
-inh2_color = '1 1 0'
+inh2_color = '1 0 1'
 
 
 def scale_pop_size(baseline, scale):
@@ -45,6 +45,7 @@ def generate(scalePops = 1,
              ratio_inh_exc=2,
              connections=True,
              duration = 1000,
+             dt = 0.025,
              input_rate = 150,
              global_delay = 2,
              max_in_pop_to_plot_and_save = 5,
@@ -68,11 +69,15 @@ def generate(scalePops = 1,
     nml_doc, network = oc.generate_network(reference)
     
     exc_cell_id = 'AllenHH_480351780'
-    oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/AllenHH/AllenHH_480351780.cell.nml', exc_cell_id)
+    exc_cell_id = 'HH_477127614'
+    exc_type = exc_cell_id.split('_')[0]
+    oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(exc_type,exc_cell_id), exc_cell_id)
     
     
     inh_cell_id = 'AllenHH_485058595'
-    oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/AllenHH/AllenHH_485058595.cell.nml', inh_cell_id)
+    inh_cell_id = 'HH_476686112'
+    inh_type = exc_cell_id.split('_')[0]
+    oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(inh_type,inh_cell_id), inh_cell_id)
 
     if percentage_exc_detailed>0:
         exc2_cell_id = 'L23_Retuned'
@@ -157,25 +162,29 @@ def generate(scalePops = 1,
 
     if connections:
 
-        for pop1 in allExc:
+        for popEpr in allExc:
             
-            for pop2 in allExc:
-                proj = oc.add_probabilistic_projection(network, "proj0",
-                                                pop1, pop2,
+            for popEpo in allExc:
+                proj = oc.add_probabilistic_projection(network, "projEE",
+                                                popEpr, popEpo,
                                                 synAmpa1.id, 0.5, delay = global_delay)
                                                 
+            for popIpo in allInh:
+                proj = oc.add_probabilistic_projection(network, "projEI",
+                                                popEpr, popIpo,
+                                                synAmpa1.id, 0.7, delay = global_delay)
+
             
-
-            proj = oc.add_probabilistic_projection(network, "proj1",
-                                            pop1, popInh,
-                                            synAmpa1.id, 0.7, delay = global_delay)
-
-            proj = oc.add_probabilistic_projection(network, "proj2",
-                                            popInh, pop1,
+        for popIpr in allInh:
+            
+            for popEpo in allExc:
+                proj = oc.add_probabilistic_projection(network, "projIE",
+                                            popIpr, popEpo,
                                             synGaba1.id, 0.7, delay = global_delay)
-
-        proj = oc.add_probabilistic_projection(network, "proj3",
-                                        popInh, popInh,
+        
+            for popIpo in allInh:
+                proj = oc.add_probabilistic_projection(network, "projII",
+                                        popIpr, popIpo,
                                         synGaba1.id, 0.5, delay = global_delay)
 
                                         
@@ -202,12 +211,20 @@ def generate(scalePops = 1,
 
     if format=='xml':
         
-        plot_v = {popExc.id:[],popInh.id:[]}
         
-        exc_traces = '%s_%s_v.dat'%(network.id,popExc.id)
-        inh_traces = '%s_%s_v.dat'%(network.id,popInh.id)
-        save_v = {exc_traces:[], inh_traces:[]}
+        save_v = {}
+        plot_v = {}
         
+        if num_exc>0:
+            exc_traces = '%s_%s_v.dat'%(network.id,popExc.id)
+            save_v[exc_traces] = []
+            plot_v[popExc.id] = []
+            
+        if num_inh>0:
+            inh_traces = '%s_%s_v.dat'%(network.id,popInh.id)
+            save_v[inh_traces] = []
+            plot_v[popInh.id] = []
+            
         if num_exc2>0:
             exc2_traces = '%s_%s_v.dat'%(network.id,popExc2.id)
             save_v[exc2_traces] = []
@@ -240,7 +257,7 @@ def generate(scalePops = 1,
         lems_file_name = oc.generate_lems_simulation(nml_doc, network, 
                                 target_dir+nml_file_name, 
                                 duration =      duration, 
-                                dt =            0.025,
+                                dt =            dt,
                                 gen_plots_for_all_v = False,
                                 gen_plots_for_quantities = plot_v,
                                 gen_saves_for_all_v = False,
@@ -366,9 +383,11 @@ if __name__ == '__main__':
         run_in_simulator='jNeuroML_NetPyNE'
         num_processors = 18
         
-        duration = 500
-        scalePops = .5
-        percentage_exc_detailed = 0
+        duration = 1000
+        dt = 0.025
+        scalePops = .25
+        percentage_exc_detailed = 0.01
+        percentage_inh_detailed = 0
         
         quick = False
         quick = True
@@ -380,16 +399,21 @@ if __name__ == '__main__':
         if quick:
             g_rng = [2]
             #g_rng = [2,3,4]
-            i_rng = [250]
+            i_rng = [350]
             #i_rng = [250,300]
             #i_rng = [100,150,200]
             trace_highlight = [(g_rng[0],i_rng[0])]
             
             duration = 1000
-            scalePops = .25
-            percentage_exc_detailed = 0
-            percentage_inh_detailed = 0.01
+            scalePops = .1
+            percentage_exc_detailed = 100
+            #percentage_exc_detailed = 0.01
+            #percentage_exc_detailed = 0
+            percentage_inh_detailed = 100
+            percentage_inh_detailed = 0
             run_in_simulator='jNeuroML_NEURON'
+            run_in_simulator='jNeuroML_NetPyNE'
+            num_processors = 12
 
 
         Rexc = np.zeros((len(g_rng), len(i_rng)))
@@ -412,6 +436,7 @@ if __name__ == '__main__':
                     scalex=2,
                     scalez=2,
                     duration = duration,
+                    dt = dt,
                     max_in_pop_to_plot_and_save = 5,
                     percentage_exc_detailed = percentage_exc_detailed,
                     percentage_inh_detailed = percentage_inh_detailed,
@@ -444,7 +469,7 @@ if __name__ == '__main__':
                                 colours.append((1-tr_shade_e,1-tr_shade_e,1))
                                 tr_shade_e*=0.8
                             elif 'Inh2' in vs:
-                                colours.append((1,1,1-tr_shade_i))
+                                colours.append((1,1-tr_shade_i,1))
                                 tr_shade_e*=0.8
                             else:
                                 colours.append((1,1-tr_shade_i,1-tr_shade_i))
@@ -505,6 +530,15 @@ if __name__ == '__main__':
                  scalePops=1,
                  suffix="C",
                  percentage_exc_detailed=100,
+                 target_dir='./NeuroML2/')
+        
+        generate(ratio_inh_exc=1.5,
+                 duration = 1000,
+                 input_rate = 250,
+                 scalePops=1,
+                 suffix="D",
+                 percentage_exc_detailed=100,
+                 percentage_inh_detailed=100,
                  target_dir='./NeuroML2/')
 
     else:

@@ -18,3 +18,7 @@
 /NeuroML2/*.spikes
 /NeuroML2/x86_64
 /NeuroML2/*.dat
+/cells/BBP/*.mod
+/cells/BBP/*.hoc
+/cells/BBP/*.dat
+/cells/BBP/x86_64
