@@ -22,3 +22,15 @@
 /cells/BBP/*.hoc
 /cells/BBP/*.dat
 /cells/BBP/x86_64
+/cells/BBP/LEMS_L23_NBC_cNAC187_1_netpyne.py
+/cells/BBP/LEMS_L23_NBC_cNAC187_1_netpyne.py_main.json
+/cells/BBP/LEMS_L23_NBC_cNAC187_1_nrn.py
+/notebooks/.ipynb_checkpoints
+/notebooks/*.hoc
+/notebooks/*.mod
+/notebooks/LEMS_iv_*.xml
+/notebooks/*_nrn.py
+/notebooks/*.dat
+/notebooks/x86_64
+/notebooks/iv_*.net.nml
+/cells/HH/*png
