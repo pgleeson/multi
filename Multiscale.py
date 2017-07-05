@@ -69,13 +69,13 @@ def generate(scalePops = 1,
     nml_doc, network = oc.generate_network(reference)
     
     exc_cell_id = 'AllenHH_480351780'
-    exc_cell_id = 'HH_477127614'
+    #exc_cell_id = 'HH_477127614'
     exc_type = exc_cell_id.split('_')[0]
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(exc_type,exc_cell_id), exc_cell_id)
     
     
     inh_cell_id = 'AllenHH_485058595'
-    inh_cell_id = 'HH_476686112'
+    #inh_cell_id = 'HH_476686112'
     inh_type = exc_cell_id.split('_')[0]
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(inh_type,inh_cell_id), inh_cell_id)
 

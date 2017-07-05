@@ -16708,53 +16708,31 @@
 
     <!-- Biophysical properties -->
 
-    <biophysicalProperties id="biophys"> 
-
-      <membraneProperties> 
-
-        <channelDensity ionChannel="pas" id="pas_all"  condDensity = "0.000142857 S_per_cm2" ion="non_specific" erev="-75 mV" />
-
-        <channelDensity ionChannel="kca" id="kca_dends"  condDensity = "3.0e-4 S_per_cm2" ion="k" segmentGroup="dendrite_group" erev="-90 mV" />
-        
-        <channelDensity ionChannel="kca" id="kca_soma"  condDensity = "3.0e-4 S_per_cm2" ion="k" segmentGroup="soma_group" erev="-90 mV" />
-
-        <channelDensity ionChannel="km" id="km_dends"  condDensity = "1e-4 S_per_cm2" ion="k" segmentGroup="dendrite_group" erev="-90 mV" />
-
-        <channelDensity ionChannel="km" id="km_soma"  condDensity = "2.2e-4 S_per_cm2" ion="k" segmentGroup="soma_group" erev="-90 mV" />
-
-        <channelDensity ionChannel="kv" id="kv_dends"  condDensity = "0.0003 S_per_cm2" ion="k" segmentGroup="dendrite_group" erev="-90 mV" />
-
-        <channelDensity ionChannel="kv" id="kv_soma"  condDensity = "0.01 S_per_cm2" ion="k" segmentGroup="soma_group" erev="-90 mV" />
-
-        <channelDensity ionChannel="kv" id="kv_axon"  condDensity = "0.01 S_per_cm2" ion="k" segmentGroup="axon_group" erev="-90 mV" />
-
-        <channelDensity ionChannel="na" id="na_dends"  condDensity = "0.008 S_per_cm2" ion="na" segmentGroup="dendrite_group"  erev="60 mV" />
-
-        <channelDensity ionChannel="na" id="na_soma"  condDensity = "0.5 S_per_cm2" ion="na" segmentGroup="soma_group" erev="60 mV" />
-
-        <channelDensity ionChannel="na" id="na_axon"  condDensity = "0.5 S_per_cm2" ion="na" segmentGroup="axon_group" erev="60 mV" />
-
-        <channelDensity ionChannel="it" id="it_dends" condDensity = "0.00015 S_per_cm2" ion="ca" segmentGroup="dendrite_group" erev="140.67523 mV" />       
-
-        <channelDensity ionChannel="it" id="it_soma"  condDensity = "0.0003 S_per_cm2" ion="ca" segmentGroup="soma_group" erev="140.67523 mV" /> 
-        
-        <channelDensity ionChannel="ca" id="ca_dends" condDensity = "5e-5 S_per_cm2" ion="ca" segmentGroup="dendrite_group"  erev="140.67523 mV"/>
-        
-        <channelDensity ionChannel="ca" id="ca_soma" condDensity = "5e-5 S_per_cm2" ion="ca" segmentGroup="soma_group" erev="140.67523 mV"/>
-        
-        <specificCapacitance  value="1 uF_per_cm2" />
-                
-        <initMembPotential value="-75.0 mV"/>
-
-      </membraneProperties> 
-
-      <intracellularProperties>
-
-        <resistivity value="0.1 kohm_cm" />
-
-      </intracellularProperties>
-
-    </biophysicalProperties>
+    
+        <biophysicalProperties id="biophys">
+            <membraneProperties>
+                <channelDensity id="pas_all" ionChannel="pas" condDensity="8e-05 S_per_cm2" erev="-74.8016780497 mV" ion="non_specific"/>
+                <channelDensity id="kca_dends" ionChannel="kca" condDensity="3.0e-4 S_per_cm2" erev="-90 mV" segmentGroup="dendrite_group" ion="k"/>
+                <channelDensity id="kca_soma" ionChannel="kca" condDensity="3.0e-4 S_per_cm2" erev="-90 mV" segmentGroup="soma_group" ion="k"/>
+                <channelDensity id="km_dends" ionChannel="km" condDensity="1e-4 S_per_cm2" erev="-90 mV" segmentGroup="dendrite_group" ion="k"/>
+                <channelDensity id="km_soma" ionChannel="km" condDensity="2.2e-4 S_per_cm2" erev="-90 mV" segmentGroup="soma_group" ion="k"/>
+                <channelDensity id="kv_dends" ionChannel="kv" condDensity="0.0003 S_per_cm2" erev="-90 mV" segmentGroup="dendrite_group" ion="k"/>
+                <channelDensity id="kv_soma" ionChannel="kv" condDensity="0.005 S_per_cm2" erev="-90 mV" segmentGroup="soma_group" ion="k"/>
+                <channelDensity id="kv_axon" ionChannel="kv" condDensity="0.005 S_per_cm2" erev="-90 mV" segmentGroup="axon_group" ion="k"/>
+                <channelDensity id="na_dends" ionChannel="na" condDensity="0.008 S_per_cm2" erev="60 mV" segmentGroup="dendrite_group" ion="na"/>
+                <channelDensity id="na_soma" ionChannel="na" condDensity="0.05 S_per_cm2" erev="60 mV" segmentGroup="soma_group" ion="na"/>
+                <channelDensity id="na_axon" ionChannel="na" condDensity="0.05 S_per_cm2" erev="60 mV" segmentGroup="axon_group" ion="na"/>
+                <channelDensity id="it_dends" ionChannel="it" condDensity="0.00015 S_per_cm2" erev="140.67523 mV" segmentGroup="dendrite_group" ion="ca"/>
+                <channelDensity id="it_soma" ionChannel="it" condDensity="0.0003 S_per_cm2" erev="140.67523 mV" segmentGroup="soma_group" ion="ca"/>
+                <channelDensity id="ca_dends" ionChannel="ca" condDensity="5e-5 S_per_cm2" erev="140.67523 mV" segmentGroup="dendrite_group" ion="ca"/>
+                <channelDensity id="ca_soma" ionChannel="ca" condDensity="5e-5 S_per_cm2" erev="140.67523 mV" segmentGroup="soma_group" ion="ca"/>
+                <specificCapacitance value="1.04928685549 uF_per_cm2"/>
+                <initMembPotential value="-75.0 mV"/>
+            </membraneProperties>
+            <intracellularProperties>
+                <resistivity value="0.1 kohm_cm"/>
+            </intracellularProperties>
+        </biophysicalProperties>
 
   </cell> 
 
