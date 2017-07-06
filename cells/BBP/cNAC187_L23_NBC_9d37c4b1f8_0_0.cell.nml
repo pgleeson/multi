@@ -10,6 +10,7 @@
     <include href="Ca_LVAst.channel.nml"></include>
     <include href="SK_E2.channel.nml"></include>
     <include href="K_Pst.channel.nml"></include>
+    <include href="CaDynamics.nml"></include>
     <include href="CaDynamics_E2_NML2.nml"></include>
     <include href="Ca.channel.nml"></include>
     <cell id="cNAC187_L23_NBC_9d37c4b1f8_0_0">

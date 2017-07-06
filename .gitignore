@@ -35,3 +35,5 @@
 /notebooks/iv_*.net.nml
 /cells/HH/*png
 /NeuroML2/LEMS_Multiscale__g1_5__i250D.xml
+/notebooks/*.png
+/notebooks/plot_cell.pyc
