@@ -69,12 +69,14 @@ def generate(scalePops = 1,
     nml_doc, network = oc.generate_network(reference)
     
     exc_cell_id = 'AllenHH_480351780'
+    exc_cell_id = 'AllenHH_477127614'
     #exc_cell_id = 'HH_477127614'
     exc_type = exc_cell_id.split('_')[0]
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(exc_type,exc_cell_id), exc_cell_id)
     
     
     inh_cell_id = 'AllenHH_485058595'
+    inh_cell_id = 'AllenHH_476686112'
     #inh_cell_id = 'HH_476686112'
     inh_type = exc_cell_id.split('_')[0]
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(inh_type,inh_cell_id), inh_cell_id)
@@ -408,7 +410,7 @@ if __name__ == '__main__':
             scalePops = .1
             percentage_exc_detailed = 100
             #percentage_exc_detailed = 0.01
-            #percentage_exc_detailed = 0
+            percentage_exc_detailed = 0
             percentage_inh_detailed = 100
             percentage_inh_detailed = 0
             run_in_simulator='jNeuroML_NEURON'
@@ -458,7 +460,14 @@ if __name__ == '__main__':
                     tr_shade_e2=1
                     tr_shade_i=1
                     tr_shade_i2=1
+                    trace_keys_ordered = []              
                     for vs in traces.keys():
+                        if 'Exc2' in vs or 'Inh2' in vs:
+                            trace_keys_ordered.insert(0,vs)
+                        else:
+                            trace_keys_ordered.append(vs)
+                            
+                    for vs in trace_keys_ordered:
                         if vs!='t':
                             all_v.append([v*1000.0 for v in traces[vs]])
                             all_t.append([t*1000.0 for t in traces['t']])
