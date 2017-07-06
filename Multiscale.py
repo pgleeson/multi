@@ -82,12 +82,12 @@ def generate(scalePops = 1,
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(inh_type,inh_cell_id), inh_cell_id)
 
     if percentage_exc_detailed>0:
-        exc2_cell_id = 'L23_Retuned'
-        oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/SmithEtAl2013/L23_Retuned.cell.nml', exc2_cell_id)
+        exc2_cell_id = 'L23_Retuned_477127614'
+        oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/SmithEtAl2013/%s.cell.nml'%exc2_cell_id, exc2_cell_id)
 
     if percentage_inh_detailed>0:
         inh2_cell_id = 'cNAC187_L23_NBC_9d37c4b1f8_0_0'
-        oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/BBP/cNAC187_L23_NBC_9d37c4b1f8_0_0.cell.nml', inh2_cell_id)
+        oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/BBP/%s.cell.nml'%inh2_cell_id, inh2_cell_id)
     
 
     xDim = 700*scalex
@@ -270,7 +270,7 @@ def generate(scalePops = 1,
         
         if run_in_simulator:
             
-            print ("Running %s in %s"%(lems_file_name, run_in_simulator))
+            print ("Running %s for %sms in %s"%(lems_file_name, duration, run_in_simulator))
             
             traces, events = oc.simulate_network(lems_file_name,
                      run_in_simulator,
@@ -387,12 +387,13 @@ if __name__ == '__main__':
         
         duration = 1000
         dt = 0.025
-        scalePops = .25
+        scalePops = 1
         percentage_exc_detailed = 0.01
+        percentage_exc_detailed = 0
         percentage_inh_detailed = 0
         
         quick = False
-        quick = True
+        #quick = True
         
         g_rng = np.arange(.5, 4.5, .5)
         i_rng = np.arange(50, 400, 50)
@@ -410,9 +411,9 @@ if __name__ == '__main__':
             scalePops = .1
             percentage_exc_detailed = 100
             #percentage_exc_detailed = 0.01
-            percentage_exc_detailed = 0
+            #percentage_exc_detailed = 0
             percentage_inh_detailed = 100
-            percentage_inh_detailed = 0
+            #percentage_inh_detailed = 0
             run_in_simulator='jNeuroML_NEURON'
             run_in_simulator='jNeuroML_NetPyNE'
             num_processors = 12
