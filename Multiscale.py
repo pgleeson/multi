@@ -53,7 +53,8 @@ def generate(scalePops = 1,
              suffix='',
              run_in_simulator = None,
              num_processors = 1,
-             target_dir='./temp/'):
+             target_dir='./temp/',
+             exc_clamp=None):
                  
     reference = ("Multiscale__g%s__i%s%s"%(ratio_inh_exc,input_rate,suffix)).replace('.','_')
                     
@@ -198,6 +199,24 @@ def generate(scalePops = 1,
                                     pop, pfs1.id,
                                     all_cells=True)
 
+
+    if exc_clamp:
+        
+        vc = oc.add_voltage_clamp_triple(nml_doc, id="exc_clamp", 
+                             delay='0ms', 
+                             duration='%sms'%duration, 
+                             conditioning_voltage=synGaba1.erev,
+                             testing_voltage=synGaba1.erev,
+                             return_voltage=synGaba1.erev, 
+                             simple_series_resistance="1e5ohm",
+                             active = "1")
+                             
+        for pop in exc_clamp:
+            oc.add_inputs_to_population(network, "exc_clamp_%s"%pop,
+                                        network.get_by_id(pop), vc.id,
+                                        all_cells=False,
+                                        only_cells=exc_clamp[pop])
+                
 
 
     #####   Save NeuroML and LEMS Simulation files      
@@ -387,10 +406,12 @@ if __name__ == '__main__':
         
         duration = 1000
         dt = 0.025
-        scalePops = 1
+        scalePops = 0.2
         percentage_exc_detailed = 0.01
-        percentage_exc_detailed = 0
+        percentage_exc_detailed = 100
+        #percentage_exc_detailed = 0
         percentage_inh_detailed = 0
+        percentage_inh_detailed = 100
         
         quick = False
         #quick = True
@@ -516,7 +537,7 @@ if __name__ == '__main__':
         print("Finished: "+info)
         pl.show()
         
-    elif '-test' in sys.argv:   
+    elif '-standard' in sys.argv:   
         
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
@@ -551,10 +572,23 @@ if __name__ == '__main__':
                  percentage_inh_detailed=100,
                  target_dir='./NeuroML2/')
 
-    else:
-        generate(ratio_inh_exc=1.5,
+
+    elif '-test' in sys.argv:   
+        
+        nml_doc, nml_file_name, lems_file_name = generate(ratio_inh_exc=1.5,
                  duration = 500,
                  input_rate = 250,
                  scalePops=1,
                  percentage_exc_detailed=0.1,
-                 target_dir='./NeuroML2/')
+                 target_dir='./temp/')
+                 
+        
+        
+    else:
+        generate(ratio_inh_exc=1.5,
+                 duration = 500,
+                 input_rate = 250,
+                 scalePops=.25,
+                 percentage_exc_detailed=0,
+                 target_dir='./temp/',
+                 exc_clamp={'popExc':[0]})

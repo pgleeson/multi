@@ -45,5 +45,6 @@ for ref in refs:
                             show_plot_already=False)
                             
     
-    plt.show()
+
+plt.show()
 
