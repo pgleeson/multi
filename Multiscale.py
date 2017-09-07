@@ -3,6 +3,7 @@ Generates a NeuroML 2 file with many types of cells, populations and inputs
 for testing purposes
 '''
 
+import opencortex
 import opencortex.core as oc
 
 import opencortex.utils.color as occ
@@ -44,6 +45,8 @@ def generate(scalePops = 1,
              scalez=1,
              ratio_inh_exc=2,
              connections=True,
+             exc_target_dendrites=False,
+             inh_target_dendrites=False,
              duration = 1000,
              dt = 0.025,
              input_rate = 150,
@@ -54,7 +57,7 @@ def generate(scalePops = 1,
              run_in_simulator = None,
              num_processors = 1,
              target_dir='./temp/',
-             exc_clamp=None):
+             exc_clamp=None):       # exc_clamp is work in progress...
                  
     reference = ("Multiscale__g%s__i%s%s"%(ratio_inh_exc,input_rate,suffix)).replace('.','_')
                     
@@ -67,7 +70,7 @@ def generate(scalePops = 1,
     num_inh2  = int(math.ceil(num_inh*percentage_inh_detailed/100.0))
     num_inh -= num_inh2
     
-    nml_doc, network = oc.generate_network(reference)
+    nml_doc, network = oc.generate_network(reference, network_seed=1234)
     
     exc_cell_id = 'AllenHH_480351780'
     exc_cell_id = 'AllenHH_477127614'
@@ -165,30 +168,43 @@ def generate(scalePops = 1,
 
     if connections:
 
+        exc_exc_conn_prob = 0.5
+        exc_inh_conn_prob = 0.7
+        inh_exc_conn_prob = 0.7
+        inh_inh_conn_prob = 0.5
+        
         for popEpr in allExc:
             
             for popEpo in allExc:
-                proj = oc.add_probabilistic_projection(network, "projEE",
-                                                popEpr, popEpo,
-                                                synAmpa1.id, 0.5, delay = global_delay)
+                proj = add_projection(network, "projEE",
+                                      popEpr, popEpo,
+                                      synAmpa1.id, exc_exc_conn_prob, 
+                                      global_delay,
+                                      exc_target_dendrites)
                                                 
             for popIpo in allInh:
-                proj = oc.add_probabilistic_projection(network, "projEI",
-                                                popEpr, popIpo,
-                                                synAmpa1.id, 0.7, delay = global_delay)
+                proj = add_projection(network, "projEI",
+                                      popEpr, popIpo,
+                                      synAmpa1.id, exc_inh_conn_prob, 
+                                      global_delay,
+                                      exc_target_dendrites)
 
             
         for popIpr in allInh:
             
             for popEpo in allExc:
-                proj = oc.add_probabilistic_projection(network, "projIE",
-                                            popIpr, popEpo,
-                                            synGaba1.id, 0.7, delay = global_delay)
+                proj = add_projection(network, "projIE",
+                                      popIpr, popEpo,
+                                      synGaba1.id, inh_exc_conn_prob, 
+                                      global_delay,
+                                      inh_target_dendrites)
         
             for popIpo in allInh:
-                proj = oc.add_probabilistic_projection(network, "projII",
-                                        popIpr, popIpo,
-                                        synGaba1.id, 0.5, delay = global_delay)
+                proj = add_projection(network, "projII",
+                                      popIpr, popIpo,
+                                      synGaba1.id, inh_inh_conn_prob, 
+                                      global_delay,
+                                      inh_target_dendrites)
 
                                         
 
@@ -200,6 +216,9 @@ def generate(scalePops = 1,
                                     all_cells=True)
 
 
+    # Work in progress...
+    # General idea: clamp one (or more) exc cell at rev pot of inh syn and see only exc inputs
+    #
     if exc_clamp:
         
         vc = oc.add_voltage_clamp_triple(nml_doc, id="exc_clamp", 
@@ -351,7 +370,43 @@ def generate(scalePops = 1,
         lems_file_name = None
                                 
     return nml_doc, nml_file_name, lems_file_name
-                         
+                        
+                        
+def add_projection(network, 
+                   proj_id,
+                   pop_pre, 
+                   pop_post,
+                   syn_id,
+                   conn_prob,
+                   delay,
+                   target_dendrites):
+
+    if not target_dendrites:
+        
+        proj = oc.add_probabilistic_projection(network, proj_id,
+                                        pop_pre, pop_post,
+                                        syn_id, conn_prob, 
+                                        delay = delay)
+    else:
+        
+        if pop_post.size > pop_pre.size:
+            num_connections = pop_pre.size * conn_prob
+            targeting_mode='convergent'
+        else:
+            num_connections = pop_post.size * conn_prob
+            targeting_mode='divergent'
+        
+        proj = oc.add_targeted_projection(network,
+                                        proj_id,
+                                        pop_pre,
+                                        pop_post,
+                                        targeting_mode=targeting_mode,
+                                        synapse_list=[syn_id],
+                                        pre_segment_group = 'soma_group',
+                                        post_segment_group = 'dendrite_group' if '2' in pop_post.id else 'soma_group',
+                                        number_conns_per_cell=num_connections,
+                                        delays_dict = {syn_id:delay})
+    return proj
        
 def get_rate_from_trace(times, volts):
 
@@ -411,10 +466,10 @@ if __name__ == '__main__':
         percentage_exc_detailed = 100
         #percentage_exc_detailed = 0
         percentage_inh_detailed = 0
-        percentage_inh_detailed = 100
+        #percentage_inh_detailed = 100
         
         quick = False
-        #quick = True
+        quick = True
         
         g_rng = np.arange(.5, 4.5, .5)
         i_rng = np.arange(50, 400, 50)
@@ -539,6 +594,8 @@ if __name__ == '__main__':
         
     elif '-standard' in sys.argv:   
         
+        opencortex.set_verbose()
+        
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
@@ -552,6 +609,16 @@ if __name__ == '__main__':
                  input_rate = 250,
                  scalePops=1,
                  suffix="B",
+                 percentage_exc_detailed=0.1,
+                 target_dir='./NeuroML2/')
+        
+        generate(ratio_inh_exc=1.5,
+                 duration = 1000,
+                 input_rate = 250,
+                 scalePops=1,
+                 suffix="B2",
+                 exc_target_dendrites=True,
+                 inh_target_dendrites=True,
                  percentage_exc_detailed=0.1,
                  target_dir='./NeuroML2/')
         
