@@ -1,15 +1,20 @@
 
 from pyneuroml.analysis import generate_current_vs_frequency_curve
 
-def plot_cell_firing(cell_file, num_processors=1,show_plot=True):
+def plot_cell_firing(cell_file, num_processors=1,quick=False,show_plot=True):
     
     cell_id = cell_file.split('/')[-1].split('.')[0]
     
     simulator = 'jNeuroML_NEURON' if num_processors==1 else 'jNeuroML_NetPyNE'
-
+    
+    custom_amps_nA =       [-0.1,-0.08,-0.06,-0.04,-0.02,0.0,0.02,0.04,0.06,0.08,0.1,0.12]
+    if quick:
+        custom_amps_nA =       [-0.08,-0.04,0.0,0.04,0.08,0.12]
+        
+    
     curve = generate_current_vs_frequency_curve(cell_file, 
                                     cell_id, 
-                                    custom_amps_nA =       [-0.1,-0.08,-0.06,-0.04,-0.02,0.0,0.02,0.04,0.06,0.08,0.1,0.12], 
+                                    custom_amps_nA =       custom_amps_nA, 
                                     analysis_duration =    1000, 
                                     pre_zero_pulse =       100,
                                     post_zero_pulse =      100,
@@ -27,12 +32,13 @@ def plot_cell_firing(cell_file, num_processors=1,show_plot=True):
                                     
     # Longer duration, more points 
     
-    curve = generate_current_vs_frequency_curve(cell_file, 
+    if not quick:
+        curve = generate_current_vs_frequency_curve(cell_file, 
                                     cell_id, 
                                     start_amp_nA =         -0.1, 
                                     end_amp_nA =           0.4, 
                                     step_nA =              0.025, 
-                                    analysis_duration =    2000, 
+                                    analysis_duration =    8000, 
                                     pre_zero_pulse =       0,
                                     post_zero_pulse =      0,
                                     analysis_delay =       100,
