@@ -5320,7 +5320,7 @@ For more information on this cell model see: https://bbp.epfl.ch/nmc-portal/micr
                 <include segmentGroup="soma_0"/>
             </segmentGroup>
             <segmentGroup id="soma_group">
-                <include segmentGroup="somatic"/>
+                <include segmentGroup="soma_0"/>
             </segmentGroup>
             <segmentGroup id="axon_group">
                 <include segmentGroup="axonal"/>

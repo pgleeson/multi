@@ -381,31 +381,30 @@ def add_projection(network,
                    delay,
                    target_dendrites):
 
-    if not target_dendrites:
-        
-        proj = oc.add_probabilistic_projection(network, proj_id,
-                                        pop_pre, pop_post,
-                                        syn_id, conn_prob, 
-                                        delay = delay)
+
+    if pop_post.size > pop_pre.size:
+        num_connections = pop_pre.size * conn_prob
+        targeting_mode='convergent'
     else:
+        num_connections = pop_post.size * conn_prob
+        targeting_mode='divergent'
+
+    post_segment_group = 'soma_group'
+    
+    if '2' in pop_post.id and target_dendrites:
+        post_segment_group = 'dendrite_group'
         
-        if pop_post.size > pop_pre.size:
-            num_connections = pop_pre.size * conn_prob
-            targeting_mode='convergent'
-        else:
-            num_connections = pop_post.size * conn_prob
-            targeting_mode='divergent'
-        
-        proj = oc.add_targeted_projection(network,
-                                        proj_id,
-                                        pop_pre,
-                                        pop_post,
-                                        targeting_mode=targeting_mode,
-                                        synapse_list=[syn_id],
-                                        pre_segment_group = 'soma_group',
-                                        post_segment_group = 'dendrite_group' if '2' in pop_post.id else 'soma_group',
-                                        number_conns_per_cell=num_connections,
-                                        delays_dict = {syn_id:delay})
+
+    proj = oc.add_targeted_projection(network,
+                                    proj_id,
+                                    pop_pre,
+                                    pop_post,
+                                    targeting_mode=targeting_mode,
+                                    synapse_list=[syn_id],
+                                    pre_segment_group = 'soma_group',
+                                    post_segment_group = post_segment_group,
+                                    number_conns_per_cell=num_connections,
+                                    delays_dict = {syn_id:delay})
     return proj
        
 def get_rate_from_trace(times, volts):
