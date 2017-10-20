@@ -3,10 +3,15 @@ Generates a NeuroML 2 file with many types of cells, populations and inputs
 for testing purposes
 '''
 
+import os
+cwd = os.getcwd()
+
+os.chdir('/Users/sadra/Desktop/OpenCortex/')
 import opencortex
 import opencortex.core as oc
 
 import opencortex.utils.color as occ
+os.chdir(cwd)
 
 import sys
 import math
@@ -561,7 +566,7 @@ if __name__ == '__main__':
                                 tr_shade_i*=0.8
                                 
                     
-                    print colours
+                    print(colours)
                     pynml.generate_plot(all_t, all_v, 
                                         "Sim g=%s, i=%s"%(g,i),
                                         colors=colours,
