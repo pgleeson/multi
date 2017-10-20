@@ -602,7 +602,7 @@ if __name__ == '__main__':
                  suffix="A",
                  percentage_exc_detailed=0,
                  target_dir='./NeuroML2/')
-        
+        '''
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
@@ -636,7 +636,7 @@ if __name__ == '__main__':
                  suffix="D",
                  percentage_exc_detailed=100,
                  percentage_inh_detailed=100,
-                 target_dir='./NeuroML2/')
+                 target_dir='./NeuroML2/')'''
 
 
     elif '-test' in sys.argv:   

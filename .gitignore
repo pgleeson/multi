@@ -46,3 +46,6 @@
 /old
 /notebooks/L23PyrRS.cell.json
 /notebooks/input_*.json
+/NeuroML2/LEMS_*_netpyne.py
+/NeuroML2/LEMS_*_main.json
+/cells/Thalamocortical/ol
