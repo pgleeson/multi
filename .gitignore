@@ -49,3 +49,8 @@
 /NeuroML2/LEMS_*_netpyne.py
 /NeuroML2/LEMS_*_main.json
 /cells/Thalamocortical/ol
+
+/NeuroML2/*.svg
+/NeuroML2/*.cell.json
+/NeuroML2/*.input.json
+/NeuroML2/*.synapse.json

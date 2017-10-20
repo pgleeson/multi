@@ -39,6 +39,7 @@ def scale_pop_size(baseline, scale):
 
 def generate(scalePops = 1,
              percentage_exc_detailed=0,
+             exc2_cell = 'SmithEtAl2013/L23_Retuned_477127614',
              percentage_inh_detailed=0,
              scalex=1,
              scaley=1,
@@ -86,8 +87,9 @@ def generate(scalePops = 1,
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(inh_type,inh_cell_id), inh_cell_id)
 
     if percentage_exc_detailed>0:
-        exc2_cell_id = 'L23_Retuned_477127614'
-        oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/SmithEtAl2013/%s.cell.nml'%exc2_cell_id, exc2_cell_id)
+        exc2_cell_id = exc2_cell.split('/')[1]
+        exc2_cell_dir = exc2_cell.split('/')[0]
+        oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(exc2_cell_dir,exc2_cell_id), exc2_cell_id)
 
     if percentage_inh_detailed>0:
         inh2_cell_id = 'cNAC187_L23_NBC_9d37c4b1f8_0_0'
@@ -602,15 +604,17 @@ if __name__ == '__main__':
                  suffix="A",
                  percentage_exc_detailed=0,
                  target_dir='./NeuroML2/')
-        '''
+     
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
                  scalePops=1,
                  suffix="B",
                  percentage_exc_detailed=0.1,
+                 exc2_cell='Thalamocortical/L23PyrRS',
+                 exc_target_dendrites=True,
                  target_dir='./NeuroML2/')
-        
+        '''
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
