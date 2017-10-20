@@ -1,0 +1,213 @@
+<Lems>
+    
+    <!-- 
+
+        This LEMS file has been automatically generated using PyNeuroML v0.3.2 (libNeuroML v0.2.34)
+
+     -->
+    
+    <!-- Specify which component to run -->
+    <Target component="Sim_Multiscale__g1_5__i250C"/>
+
+    <!-- Include core NeuroML2 ComponentType definitions -->
+    <Include file="Cells.xml"/>
+    <Include file="Networks.xml"/>
+    <Include file="Simulation.xml"/>
+    
+    <Include file="Multiscale__g1_5__i250C/AllenHH_477127614.cell.nml"/>
+    <Include file="Multiscale__g1_5__i250C/NaTs.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/K_P.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/Nap.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/Kv3_1.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/K_T.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/SK.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/Im.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/Ih.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/Ca_LVA.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/Ca_HVA.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/pas.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/CaDynamics.nml"/>
+    <Include file="Multiscale__g1_5__i250C/AllenHH_476686112.cell.nml"/>
+    <Include file="Multiscale__g1_5__i250C/L23_NoHotSpot.cell.nml"/>
+    <Include file="Multiscale__g1_5__i250C/ca.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/it.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/kca.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/km.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/kv.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C/na.channel.nml"/>
+    <Include file="Multiscale__g1_5__i250C.net.nml"/>
+   
+    <Simulation id="Sim_Multiscale__g1_5__i250C" length="1000ms" step="0.025ms" target="Multiscale__g1_5__i250C" seed="12345">  <!-- Note seed: ensures same random numbers used every run -->
+        
+        <Display id="popInh" title="Plots of popInh" timeScale="1ms" xmin="-100.0" xmax="1100.0" ymin="-80" ymax="40">
+            <Line id="popInh_0_AllenHH_476686112_v" quantity="popInh/0/AllenHH_476686112/v" scale="1mV" color="#6aa799" timeScale="1ms"/>
+            <Line id="popInh_1_AllenHH_476686112_v" quantity="popInh/1/AllenHH_476686112/v" scale="1mV" color="#029a72" timeScale="1ms"/>
+            <Line id="popInh_2_AllenHH_476686112_v" quantity="popInh/2/AllenHH_476686112/v" scale="1mV" color="#d340bb" timeScale="1ms"/>
+            <Line id="popInh_3_AllenHH_476686112_v" quantity="popInh/3/AllenHH_476686112/v" scale="1mV" color="#4c73a9" timeScale="1ms"/>
+            <Line id="popInh_4_AllenHH_476686112_v" quantity="popInh/4/AllenHH_476686112/v" scale="1mV" color="#5e503a" timeScale="1ms"/>
+        </Display>
+        
+        <Display id="popExc2" title="Plots of popExc2" timeScale="1ms" xmin="-100.0" xmax="1100.0" ymin="-80" ymax="40">
+            <Line id="popExc2_0_L23_NoHotSpot_v" quantity="popExc2/0/L23_NoHotSpot/v" scale="1mV" color="#3193ca" timeScale="1ms"/>
+        </Display>
+        
+        <Display id="popExc" title="Plots of popExc" timeScale="1ms" xmin="-100.0" xmax="1100.0" ymin="-80" ymax="40">
+            <Line id="popExc_0_AllenHH_477127614_v" quantity="popExc/0/AllenHH_477127614/v" scale="1mV" color="#90e5e9" timeScale="1ms"/>
+            <Line id="popExc_1_AllenHH_477127614_v" quantity="popExc/1/AllenHH_477127614/v" scale="1mV" color="#29645f" timeScale="1ms"/>
+            <Line id="popExc_2_AllenHH_477127614_v" quantity="popExc/2/AllenHH_477127614/v" scale="1mV" color="#1fcff4" timeScale="1ms"/>
+            <Line id="popExc_3_AllenHH_477127614_v" quantity="popExc/3/AllenHH_477127614/v" scale="1mV" color="#6ed4e9" timeScale="1ms"/>
+            <Line id="popExc_4_AllenHH_477127614_v" quantity="popExc/4/AllenHH_477127614/v" scale="1mV" color="#8fe460" timeScale="1ms"/>
+        </Display>
+        
+        <OutputFile id="Multiscale__g1_5__i250C_popExc_v_dat" fileName="Multiscale__g1_5__i250C_popExc_v.dat">
+            <OutputColumn id="popExc_0_AllenHH_477127614_v" quantity="popExc/0/AllenHH_477127614/v"/> 
+            <OutputColumn id="popExc_1_AllenHH_477127614_v" quantity="popExc/1/AllenHH_477127614/v"/> 
+            <OutputColumn id="popExc_2_AllenHH_477127614_v" quantity="popExc/2/AllenHH_477127614/v"/> 
+            <OutputColumn id="popExc_3_AllenHH_477127614_v" quantity="popExc/3/AllenHH_477127614/v"/> 
+            <OutputColumn id="popExc_4_AllenHH_477127614_v" quantity="popExc/4/AllenHH_477127614/v"/> 
+        </OutputFile>
+        
+        <OutputFile id="Multiscale__g1_5__i250C_popInh_v_dat" fileName="Multiscale__g1_5__i250C_popInh_v.dat">
+            <OutputColumn id="popInh_0_AllenHH_476686112_v" quantity="popInh/0/AllenHH_476686112/v"/> 
+            <OutputColumn id="popInh_1_AllenHH_476686112_v" quantity="popInh/1/AllenHH_476686112/v"/> 
+            <OutputColumn id="popInh_2_AllenHH_476686112_v" quantity="popInh/2/AllenHH_476686112/v"/> 
+            <OutputColumn id="popInh_3_AllenHH_476686112_v" quantity="popInh/3/AllenHH_476686112/v"/> 
+            <OutputColumn id="popInh_4_AllenHH_476686112_v" quantity="popInh/4/AllenHH_476686112/v"/> 
+        </OutputFile>
+        
+        <OutputFile id="Multiscale__g1_5__i250C_popExc2_v_dat" fileName="Multiscale__g1_5__i250C_popExc2_v.dat">
+            <OutputColumn id="popExc2_0_L23_NoHotSpot_v" quantity="popExc2/0/L23_NoHotSpot/v"/> 
+        </OutputFile>
+        
+        <EventOutputFile id="Spikes_file__popExc" fileName="Sim_Multiscale__g1_5__i250C.popExc.spikes" format="ID_TIME">
+            <EventSelection id="0" select="popExc/0/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="1" select="popExc/1/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="2" select="popExc/2/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="3" select="popExc/3/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="4" select="popExc/4/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="5" select="popExc/5/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="6" select="popExc/6/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="7" select="popExc/7/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="8" select="popExc/8/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="9" select="popExc/9/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="10" select="popExc/10/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="11" select="popExc/11/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="12" select="popExc/12/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="13" select="popExc/13/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="14" select="popExc/14/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="15" select="popExc/15/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="16" select="popExc/16/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="17" select="popExc/17/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="18" select="popExc/18/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="19" select="popExc/19/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="20" select="popExc/20/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="21" select="popExc/21/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="22" select="popExc/22/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="23" select="popExc/23/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="24" select="popExc/24/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="25" select="popExc/25/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="26" select="popExc/26/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="27" select="popExc/27/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="28" select="popExc/28/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="29" select="popExc/29/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="30" select="popExc/30/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="31" select="popExc/31/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="32" select="popExc/32/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="33" select="popExc/33/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="34" select="popExc/34/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="35" select="popExc/35/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="36" select="popExc/36/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="37" select="popExc/37/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="38" select="popExc/38/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="39" select="popExc/39/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="40" select="popExc/40/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="41" select="popExc/41/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="42" select="popExc/42/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="43" select="popExc/43/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="44" select="popExc/44/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="45" select="popExc/45/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="46" select="popExc/46/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="47" select="popExc/47/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="48" select="popExc/48/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="49" select="popExc/49/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="50" select="popExc/50/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="51" select="popExc/51/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="52" select="popExc/52/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="53" select="popExc/53/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="54" select="popExc/54/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="55" select="popExc/55/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="56" select="popExc/56/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="57" select="popExc/57/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="58" select="popExc/58/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="59" select="popExc/59/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="60" select="popExc/60/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="61" select="popExc/61/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="62" select="popExc/62/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="63" select="popExc/63/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="64" select="popExc/64/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="65" select="popExc/65/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="66" select="popExc/66/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="67" select="popExc/67/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="68" select="popExc/68/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="69" select="popExc/69/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="70" select="popExc/70/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="71" select="popExc/71/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="72" select="popExc/72/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="73" select="popExc/73/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="74" select="popExc/74/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="75" select="popExc/75/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="76" select="popExc/76/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="77" select="popExc/77/AllenHH_477127614" eventPort="spike"/> 
+            <EventSelection id="78" select="popExc/78/AllenHH_477127614" eventPort="spike"/> 
+        </EventOutputFile>
+        
+        <EventOutputFile id="Spikes_file__popExc2" fileName="Sim_Multiscale__g1_5__i250C.popExc2.spikes" format="ID_TIME">
+            <EventSelection id="0" select="popExc2/0/L23_NoHotSpot" eventPort="spike"/> 
+        </EventOutputFile>
+        
+        <EventOutputFile id="Spikes_file__popInh" fileName="Sim_Multiscale__g1_5__i250C.popInh.spikes" format="ID_TIME">
+            <EventSelection id="0" select="popInh/0/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="1" select="popInh/1/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="2" select="popInh/2/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="3" select="popInh/3/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="4" select="popInh/4/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="5" select="popInh/5/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="6" select="popInh/6/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="7" select="popInh/7/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="8" select="popInh/8/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="9" select="popInh/9/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="10" select="popInh/10/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="11" select="popInh/11/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="12" select="popInh/12/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="13" select="popInh/13/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="14" select="popInh/14/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="15" select="popInh/15/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="16" select="popInh/16/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="17" select="popInh/17/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="18" select="popInh/18/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="19" select="popInh/19/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="20" select="popInh/20/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="21" select="popInh/21/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="22" select="popInh/22/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="23" select="popInh/23/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="24" select="popInh/24/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="25" select="popInh/25/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="26" select="popInh/26/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="27" select="popInh/27/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="28" select="popInh/28/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="29" select="popInh/29/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="30" select="popInh/30/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="31" select="popInh/31/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="32" select="popInh/32/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="33" select="popInh/33/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="34" select="popInh/34/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="35" select="popInh/35/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="36" select="popInh/36/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="37" select="popInh/37/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="38" select="popInh/38/AllenHH_476686112" eventPort="spike"/> 
+            <EventSelection id="39" select="popInh/39/AllenHH_476686112" eventPort="spike"/> 
+        </EventOutputFile>
+        
+    </Simulation>
+
+</Lems>
