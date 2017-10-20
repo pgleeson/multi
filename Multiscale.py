@@ -561,7 +561,7 @@ if __name__ == '__main__':
                                 tr_shade_i*=0.8
                                 
                     
-                    print colours
+                    print(colours)
                     pynml.generate_plot(all_t, all_v, 
                                         "Sim g=%s, i=%s"%(g,i),
                                         colors=colours,
