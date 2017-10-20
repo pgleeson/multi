@@ -596,7 +596,7 @@ if __name__ == '__main__':
     elif '-standard' in sys.argv:   
         
         opencortex.set_verbose()
-        
+        '''
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
@@ -622,6 +622,16 @@ if __name__ == '__main__':
                  suffix="C",
                  percentage_exc_detailed=0.1,
                  exc2_cell='SmithEtAl2013/L23_NoHotSpot',
+                 exc_target_dendrites=True,
+                 target_dir='./NeuroML2/')'''
+     
+        generate(ratio_inh_exc=1.5,
+                 duration = 1000,
+                 input_rate = 250,
+                 scalePops=1,
+                 suffix="D",
+                 percentage_exc_detailed=0.1,
+                 exc2_cell='BBP/cADpyr229_L23_PC_5ecbf9b163_0_0',
                  exc_target_dendrites=True,
                  target_dir='./NeuroML2/')
         '''

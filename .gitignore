@@ -11,9 +11,7 @@
 /NeuroML2/*.pov*
 /NeuroML2/*.hoc
 /NeuroML2/*.mod
-/NeuroML2/LEMS_Multiscale__g1_5__i250A.xml
-/NeuroML2/LEMS_Multiscale__g1_5__i250B.xml
-/NeuroML2/LEMS_Multiscale__g1_5__i250C.xml
+
 /NeuroML2/*_nrn.py
 /NeuroML2/*.spikes
 /NeuroML2/x86_64
@@ -34,7 +32,6 @@
 /notebooks/x86_64
 /notebooks/iv_*.net.nml
 /cells/HH/*png
-/NeuroML2/LEMS_Multiscale__g1_5__i250D.xml
 /notebooks/*.png
 /notebooks/plot_cell.pyc
 /notebooks/LEMS_iv*_netpyne.py
