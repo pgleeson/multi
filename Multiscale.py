@@ -3,15 +3,10 @@ Generates a NeuroML 2 file with many types of cells, populations and inputs
 for testing purposes
 '''
 
-import os
-cwd = os.getcwd()
-
-os.chdir('/Users/sadra/Desktop/OpenCortex/')
 import opencortex
 import opencortex.core as oc
 
 import opencortex.utils.color as occ
-os.chdir(cwd)
 
 import sys
 import math
