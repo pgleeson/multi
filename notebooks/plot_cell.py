@@ -66,7 +66,7 @@ if __name__ == '__main__':
     
     if '-summary' in sys.argv:
         
-        erefs = ['AllenHH_477127614','L23_Retuned_477127614']#,'L23_Retuned_477127614']
+        erefs = ['AllenHH_477127614','L23_Retuned_477127614','L23PyrRS']#,'L23_Retuned_477127614']
         irefs = ['AllenHH_476686112']
         
         iv_xs = []
