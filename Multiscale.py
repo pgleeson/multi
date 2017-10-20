@@ -614,6 +614,16 @@ if __name__ == '__main__':
                  exc2_cell='Thalamocortical/L23PyrRS',
                  exc_target_dendrites=True,
                  target_dir='./NeuroML2/')
+     
+        generate(ratio_inh_exc=1.5,
+                 duration = 1000,
+                 input_rate = 250,
+                 scalePops=1,
+                 suffix="C",
+                 percentage_exc_detailed=0.1,
+                 exc2_cell='SmithEtAl2013/L23_NoHotSpot',
+                 exc_target_dendrites=True,
+                 target_dir='./NeuroML2/')
         '''
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
