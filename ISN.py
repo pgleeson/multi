@@ -20,7 +20,7 @@ import pprint
 
 pp = pprint.PrettyPrinter(indent=4)
 
-min_pop_size = 3
+min_pop_size = 1
 
 exc_color = occ.L23_PRINCIPAL_CELL
 exc2_color = occ.L23_PRINCIPAL_CELL_2
@@ -33,11 +33,19 @@ inh_color = '1 0 0'
 inh2_color = '1 0 1'
 
 
+# transitent time to discard the data (ms)
+Ttrans = 150.
+# simulation time before perturbation (ms)
+Tblank= 500.
+# simulation time of perturbation (ms)
+Tstim = 500.
+
+
 def scale_pop_size(baseline, scale):
     return max(min_pop_size, int(baseline*scale))
 
 
-def generate(scalePops = 1,
+def generate(scale_populations = 1,
              percentage_exc_detailed=0,
              exc2_cell = 'SmithEtAl2013/L23_Retuned_477127614',
              percentage_inh_detailed=0,
@@ -49,12 +57,15 @@ def generate(scalePops = 1,
              Bie = -.2,
              Bii = -.2,
              Be_bkg = .1,
+             Be_stim = .1,
+             r_bkg = 0,
+             r_stim = 0,
+             percent_inh_pert=0.75,
              connections=True,
              exc_target_dendrites=False,
              inh_target_dendrites=False,
              duration = 1000,
              dt = 0.025,
-             input_rate = 150,
              global_delay = .1,
              max_in_pop_to_plot_and_save = 10,
              format='xml',
@@ -67,11 +78,11 @@ def generate(scalePops = 1,
     reference = ("ISN_net%s"%(suffix)).replace('.','_')
                     
 
-    num_exc = scale_pop_size(80,scalePops)
+    num_exc = scale_pop_size(80,scale_populations)
     num_exc2  = int(math.ceil(num_exc*percentage_exc_detailed/100.0))
     num_exc -= num_exc2
     
-    num_inh = scale_pop_size(20,scalePops)
+    num_inh = scale_pop_size(20,scale_populations)
     num_inh2  = int(math.ceil(num_inh*percentage_inh_detailed/100.0))
     num_inh -= num_inh2
     
@@ -123,14 +134,32 @@ def generate(scalePops = 1,
 
     synAmpaBkg = oc.add_exp_one_syn(nml_doc, id="synAmpaBkg", gbase="%snS"%Be_bkg,
                              erev="0mV", tau_decay="1ms")
+    synAmpaStim = oc.add_exp_one_syn(nml_doc, id="synAmpaStim", gbase="%snS"%Be_stim,
+                             erev="0mV", tau_decay="1ms")
                              
     #####   Input types
 
 
-    pfs1 = oc.add_poisson_firing_synapse(nml_doc,
-                                       id="psf1",
-                                       average_rate="%s Hz"%input_rate,
+    tpfsA = oc.add_transient_poisson_firing_synapse(nml_doc,
+                                       id="tpsfA",
+                                       average_rate="%s Hz"%r_bkg,
+                                       delay = '0ms', 
+                                       duration = '%sms'%(Ttrans+Tblank),
                                        synapse_id=synAmpaBkg.id)
+
+    tpfsB = oc.add_transient_poisson_firing_synapse(nml_doc,
+                                       id="tpsfB",
+                                       average_rate="%s Hz"%r_bkg,
+                                       delay = '%sms'%(Ttrans+Tblank),
+                                       duration = '%sms'%(Tstim),
+                                       synapse_id=synAmpaBkg.id)
+
+    tpfsC = oc.add_transient_poisson_firing_synapse(nml_doc,
+                                       id="tpsfC",
+                                       average_rate="%s Hz"%(r_bkg+r_stim),
+                                       delay = '%sms'%(Ttrans+Tblank),
+                                       duration = '%sms'%(Tstim),
+                                       synapse_id=synAmpaStim.id)
 
 
     #####   Populations
@@ -223,13 +252,33 @@ def generate(scalePops = 1,
     #####   Inputs
 
     for pop in allExc:
-        oc.add_inputs_to_population(network, "Stim_%s"%pop.id,
-                                    pop, pfs1.id,
+        oc.add_inputs_to_population(network, "Stim_pre_%s"%pop.id,
+                                    pop, tpfsA.id,
                                     all_cells=True)
     for pop in allInh:
-        oc.add_inputs_to_population(network, "Stim_%s"%pop.id,
-                                    pop, pfs1.id,
+        oc.add_inputs_to_population(network, "Stim_pre_%s"%pop.id,
+                                    pop, tpfsA.id,
                                     all_cells=True)
+                                 
+    for pop in allExc:
+        oc.add_inputs_to_population(network, "Stim_E_%s"%pop.id,
+                                    pop, tpfsB.id,
+                                    all_cells=True)   
+                        
+    for pop in allInh:
+        
+        num_inh_pert = int(pop.get_size()*percent_inh_pert)
+           
+        oc.add_inputs_to_population(network, "Stim_I_pert_%s"%pop.id,
+                                    pop, tpfsC.id,
+                                    all_cells=False,
+                                    only_cells=range(0,num_inh_pert))   
+                                    
+        oc.add_inputs_to_population(network, "Stim_I_nonpert_%s"%pop.id,
+                                    pop, tpfsB.id,
+                                    all_cells=False,
+                                    only_cells=range(num_inh_pert,pop.get_size()))  
+    
 
 
     # Work in progress...
@@ -462,7 +511,7 @@ if __name__ == '__main__':
     if '-all' in sys.argv:
         generate()
         
-        generate(scalePops = 5,
+        generate(scale_populations = 5,
              scalex=2,
              scalez=2,
              connections=False)
@@ -476,7 +525,7 @@ if __name__ == '__main__':
         
         duration = 1000
         dt = 0.025
-        scalePops = 0.2
+        scale_populations = 0.2
         percentage_exc_detailed = 0.01
         percentage_exc_detailed = 100
         #percentage_exc_detailed = 0
@@ -499,7 +548,7 @@ if __name__ == '__main__':
             trace_highlight = [(g_rng[0],i_rng[0])]
             
             duration = 1000
-            scalePops = .1
+            scale_populations = .1
             percentage_exc_detailed = 100
             #percentage_exc_detailed = 0.01
             #percentage_exc_detailed = 0
@@ -513,7 +562,7 @@ if __name__ == '__main__':
         Rexc = np.zeros((len(g_rng), len(i_rng)))
         Rinh = np.zeros((len(g_rng), len(i_rng)))
         
-        desc = '%s_%s_%sms_%se2_%si2'%(run_in_simulator,scalePops, duration,percentage_exc_detailed,percentage_inh_detailed)
+        desc = '%s_%s_%sms_%se2_%si2'%(run_in_simulator,scale_populations, duration,percentage_exc_detailed,percentage_inh_detailed)
         
         count=1
         for i1, g in enumerate(g_rng):
@@ -524,9 +573,9 @@ if __name__ == '__main__':
                     if h[0]==g and h[1]==i:
                         highlight = True
                         
-                print(" Run %s of %s: scale=%s; g=%s; i=%s (highlighting: %s)"%(count, len(g_rng)*len(i_rng), scalePops, g, i, highlight))
+                print(" Run %s of %s: scale=%s; g=%s; i=%s (highlighting: %s)"%(count, len(g_rng)*len(i_rng), scale_populations, g, i, highlight))
                 
-                info = generate(scalePops = scalePops,
+                info = generate(scale_populations = scale_populations,
                     scalex=2,
                     scalez=2,
                     duration = duration,
@@ -590,7 +639,7 @@ if __name__ == '__main__':
                 
 
         fig = pl.figure(figsize=(16,8))
-        info = "%s: scale %s, %s ms"%(run_in_simulator,scalePops, duration)
+        info = "%s: scale %s, %s ms"%(run_in_simulator,scale_populations, duration)
 
         fig.canvas.set_window_title(info)
         pl.suptitle(info)
@@ -614,7 +663,7 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
-                 scalePops=1,
+                 scale_populations=1,
                  suffix="A",
                  percentage_exc_detailed=0,
                  target_dir='./NeuroML2/')
@@ -622,7 +671,7 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
-                 scalePops=1,
+                 scale_populations=1,
                  suffix="B",
                  percentage_exc_detailed=0.1,
                  exc2_cell='Thalamocortical/L23PyrRS',
@@ -632,7 +681,7 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
-                 scalePops=1,
+                 scale_populations=1,
                  suffix="C",
                  percentage_exc_detailed=0.1,
                  exc2_cell='SmithEtAl2013/L23_NoHotSpot',
@@ -642,7 +691,7 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
-                 scalePops=1,
+                 scale_populations=1,
                  suffix="D",
                  percentage_exc_detailed=0.1,
                  exc2_cell='BBP/cADpyr229_L23_PC_5ecbf9b163_0_0',
@@ -652,7 +701,7 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
-                 scalePops=1,
+                 scale_populations=1,
                  suffix="B2",
                  exc_target_dendrites=True,
                  inh_target_dendrites=True,
@@ -662,7 +711,7 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
-                 scalePops=1,
+                 scale_populations=1,
                  suffix="C",
                  percentage_exc_detailed=100,
                  target_dir='./NeuroML2/')
@@ -670,48 +719,58 @@ if __name__ == '__main__':
         generate(ratio_inh_exc=1.5,
                  duration = 1000,
                  input_rate = 250,
-                 scalePops=1,
+                 scale_populations=1,
                  suffix="D",
                  percentage_exc_detailed=100,
                  percentage_inh_detailed=100,
                  target_dir='./NeuroML2/')'''
 
-
-    elif '-test' in sys.argv:   
-        
-        nml_doc, nml_file_name, lems_file_name = generate(ratio_inh_exc=1.5,
-                 duration = 500,
-                 input_rate = 250,
-                 scalePops=1, 
-                 percentage_exc_detailed=0.1,
-                 target_dir='./temp/')
-                 
-        
+                     
         
     else:
+        # background rate (sp/s)
+        r_bkg = 10000.-400.
+        # rate of perturbation (sp/s)
+        r_stim = -400.
+        
+        percent_inh_pert = 0.75
         
         Be = .1
-        Bi = -.2
+        Bi = -.2*1
         Be_bkg = .1
+        Be_stim = .1
         
-        scale_up = 10
+        scale_up = 5
         Be*=scale_up
         Bi*=scale_up
         Be_bkg*=scale_up
+        Be_stim*=scale_up
         
         Bee = Be
         Bei = Be
         Bie = Bi
         Bii = Bi
         
+        if '-test' in sys.argv:   
+            #r_bkg = 20
+            r_stim = -2000
+            
+            percent_inh_pert = .75
+            scale_populations = 2
+            
+        
         generate(Bee = Bee,
                  Bei = Bei,
                  Bie = Bie,
                  Bii = Bii,
                  Be_bkg = Be_bkg,
-                 duration = 500,
+                 Be_stim = Be_stim,
+                 r_bkg = r_bkg,
+                 r_stim = r_stim,
+                 percent_inh_pert=percent_inh_pert,
+                 duration = 1000,
                  dt = 0.025,
-                 input_rate = 2250,
-                 scalePops=1,
+                 scale_populations=scale_populations,
+                 format='xml',
                  percentage_exc_detailed=0,
                  target_dir='./temp/')
