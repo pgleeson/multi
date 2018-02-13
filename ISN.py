@@ -44,15 +44,19 @@ def generate(scalePops = 1,
              scalex=1,
              scaley=1,
              scalez=1,
-             ratio_inh_exc=2,
+             Bee = .1,
+             Bei = .1,
+             Bie = -.2,
+             Bii = -.2,
+             Be_bkg = .1,
              connections=True,
              exc_target_dendrites=False,
              inh_target_dendrites=False,
              duration = 1000,
              dt = 0.025,
              input_rate = 150,
-             global_delay = 2,
-             max_in_pop_to_plot_and_save = 5,
+             global_delay = .1,
+             max_in_pop_to_plot_and_save = 10,
              format='xml',
              suffix='',
              run_in_simulator = None,
@@ -60,7 +64,7 @@ def generate(scalePops = 1,
              target_dir='./temp/',
              exc_clamp=None):       # exc_clamp is work in progress...
                  
-    reference = ("ISN__%s%s"%(input_rate,suffix)).replace('.','_')
+    reference = ("ISN_net%s"%(suffix)).replace('.','_')
                     
 
     num_exc = scale_pop_size(80,scalePops)
@@ -106,21 +110,27 @@ def generate(scalePops = 1,
 
     #####   Synapses
     
-    exc_syn_nS = 1.
 
-    synAmpa1 = oc.add_exp_two_syn(nml_doc, id="synAmpa1", gbase="%snS"%exc_syn_nS,
-                             erev="0mV", tau_rise="0.5ms", tau_decay="5ms")
+    synAmpaEE = oc.add_exp_one_syn(nml_doc, id="synAmpaEE", gbase="%snS"%Bee,
+                             erev="0mV", tau_decay="1ms")
+    synAmpaEI = oc.add_exp_one_syn(nml_doc, id="synAmpaEI", gbase="%snS"%Bei,
+                             erev="0mV", tau_decay="1ms")
 
-    synGaba1 = oc.add_exp_two_syn(nml_doc, id="synGaba1", gbase="%snS"%(exc_syn_nS*ratio_inh_exc),
-                             erev="-80mV", tau_rise="1ms", tau_decay="20ms")
+    synGabaIE = oc.add_exp_one_syn(nml_doc, id="synGabaIE", gbase="%snS"%abs(Bie),
+                             erev="-80mV", tau_decay="1ms")
+    synGabaII = oc.add_exp_one_syn(nml_doc, id="synGabaII", gbase="%snS"%abs(Bii),
+                             erev="-80mV", tau_decay="1ms")
 
+    synAmpaBkg = oc.add_exp_one_syn(nml_doc, id="synAmpaBkg", gbase="%snS"%Be_bkg,
+                             erev="0mV", tau_decay="1ms")
+                             
     #####   Input types
 
 
     pfs1 = oc.add_poisson_firing_synapse(nml_doc,
                                        id="psf1",
                                        average_rate="%s Hz"%input_rate,
-                                       synapse_id=synAmpa1.id)
+                                       synapse_id=synAmpaBkg.id)
 
 
     #####   Populations
@@ -180,14 +190,14 @@ def generate(scalePops = 1,
             for popEpo in allExc:
                 proj = add_projection(network, "projEE",
                                       popEpr, popEpo,
-                                      synAmpa1.id, exc_exc_conn_prob, 
+                                      synAmpaEE.id, exc_exc_conn_prob, 
                                       global_delay,
                                       exc_target_dendrites)
                                                 
             for popIpo in allInh:
                 proj = add_projection(network, "projEI",
                                       popEpr, popIpo,
-                                      synAmpa1.id, exc_inh_conn_prob, 
+                                      synAmpaEI.id, exc_inh_conn_prob, 
                                       global_delay,
                                       exc_target_dendrites)
 
@@ -197,14 +207,14 @@ def generate(scalePops = 1,
             for popEpo in allExc:
                 proj = add_projection(network, "projIE",
                                       popIpr, popEpo,
-                                      synGaba1.id, inh_exc_conn_prob, 
+                                      synGabaIE.id, inh_exc_conn_prob, 
                                       global_delay,
                                       inh_target_dendrites)
         
             for popIpo in allInh:
                 proj = add_projection(network, "projII",
                                       popIpr, popIpo,
-                                      synGaba1.id, inh_inh_conn_prob, 
+                                      synGabaII.id, inh_inh_conn_prob, 
                                       global_delay,
                                       inh_target_dendrites)
 
@@ -213,6 +223,10 @@ def generate(scalePops = 1,
     #####   Inputs
 
     for pop in allExc:
+        oc.add_inputs_to_population(network, "Stim_%s"%pop.id,
+                                    pop, pfs1.id,
+                                    all_cells=True)
+    for pop in allInh:
         oc.add_inputs_to_population(network, "Stim_%s"%pop.id,
                                     pop, pfs1.id,
                                     all_cells=True)
@@ -675,11 +689,29 @@ if __name__ == '__main__':
         
         
     else:
-        generate(ratio_inh_exc=1.5,
+        
+        Be = .1
+        Bi = -.2
+        Be_bkg = .1
+        
+        scale_up = 10
+        Be*=scale_up
+        Bi*=scale_up
+        Be_bkg*=scale_up
+        
+        Bee = Be
+        Bei = Be
+        Bie = Bi
+        Bii = Bi
+        
+        generate(Bee = Bee,
+                 Bei = Bei,
+                 Bie = Bie,
+                 Bii = Bii,
+                 Be_bkg = Be_bkg,
                  duration = 500,
                  dt = 0.025,
-                 input_rate = 250,
+                 input_rate = 2250,
                  scalePops=1,
                  percentage_exc_detailed=0,
-                 target_dir='./temp/',
-                 exc_clamp={'popExc':[0]})
+                 target_dir='./temp/')
