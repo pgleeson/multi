@@ -504,21 +504,14 @@ def _plot_(X, g_rng, i_rng, sbplt=111, ttl=[]):
 
 if __name__ == '__main__':
     
-    if '-all' in sys.argv:
-        generate()
-        
-        generate(scale_populations = 5,
-             scalex=2,
-             scalez=2,
-             connections=False)
              
              
-    elif '-paramSweep' in sys.argv:     
+    if '-paramSweep' in sys.argv:     
         
         run_in_simulator='jNeuroML_NEURON'
         run_in_simulator='jNeuroML_NetPyNE'
         num_processors = 18
-        
+        '''
         duration = 1000
         dt = 0.025
         scale_populations = 0.2
@@ -650,76 +643,8 @@ if __name__ == '__main__':
 
         pl.savefig("%s_rates.png"%desc, bbox_inches='tight')
         print("Finished: "+info)
-        pl.show()
+        pl.show()'''
         
-    elif '-standard' in sys.argv:   
-        
-        opencortex.set_verbose()
-        '''
-        generate(ratio_inh_exc=1.5,
-                 duration = 1000,
-                 input_rate = 250,
-                 scale_populations=1,
-                 suffix="A",
-                 percentage_exc_detailed=0,
-                 target_dir='./NeuroML2/')
-     
-        generate(ratio_inh_exc=1.5,
-                 duration = 1000,
-                 input_rate = 250,
-                 scale_populations=1,
-                 suffix="B",
-                 percentage_exc_detailed=0.1,
-                 exc2_cell='Thalamocortical/L23PyrRS',
-                 exc_target_dendrites=True,
-                 target_dir='./NeuroML2/')
-     
-        generate(ratio_inh_exc=1.5,
-                 duration = 1000,
-                 input_rate = 250,
-                 scale_populations=1,
-                 suffix="C",
-                 percentage_exc_detailed=0.1,
-                 exc2_cell='SmithEtAl2013/L23_NoHotSpot',
-                 exc_target_dendrites=True,
-                 target_dir='./NeuroML2/')'''
-     
-        generate(ratio_inh_exc=1.5,
-                 duration = 1000,
-                 input_rate = 250,
-                 scale_populations=1,
-                 suffix="D",
-                 percentage_exc_detailed=0.1,
-                 exc2_cell='BBP/cADpyr229_L23_PC_5ecbf9b163_0_0',
-                 exc_target_dendrites=True,
-                 target_dir='./NeuroML2/')
-        '''
-        generate(ratio_inh_exc=1.5,
-                 duration = 1000,
-                 input_rate = 250,
-                 scale_populations=1,
-                 suffix="B2",
-                 exc_target_dendrites=True,
-                 inh_target_dendrites=True,
-                 percentage_exc_detailed=0.1,
-                 target_dir='./NeuroML2/')
-        
-        generate(ratio_inh_exc=1.5,
-                 duration = 1000,
-                 input_rate = 250,
-                 scale_populations=1,
-                 suffix="C",
-                 percentage_exc_detailed=100,
-                 target_dir='./NeuroML2/')
-        
-        generate(ratio_inh_exc=1.5,
-                 duration = 1000,
-                 input_rate = 250,
-                 scale_populations=1,
-                 suffix="D",
-                 percentage_exc_detailed=100,
-                 percentage_inh_detailed=100,
-                 target_dir='./NeuroML2/')'''
 
                      
         
@@ -756,7 +681,12 @@ if __name__ == '__main__':
             
             percent_inh_pert = .75
             scale_populations = 1
+            
+        if '-neuron' in sys.argv: 
             run_in_simulator = 'jNeuroML_NEURON'
+            
+        if '-netpyne' in sys.argv: 
+            run_in_simulator = 'jNeuroML_NetPyNE'
             
         
         generate(Bee = Bee,
