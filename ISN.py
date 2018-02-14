@@ -313,126 +313,122 @@ def generate(scale_populations = 1,
                     format = format,
                     target_dir=target_dir)
         
+    print("Saved to: %s"%nml_file_name)
 
-    if format=='xml':
+    save_v = {}
+    plot_v = {}
+
+    if num_exc>0:
+        exc_traces = '%s_%s_v.dat'%(network.id,popExc.id)
+        save_v[exc_traces] = []
+        plot_v[popExc.id] = []
+
+    if num_inh>0:
+        inh_traces = '%s_%s_v.dat'%(network.id,popInh.id)
+        save_v[inh_traces] = []
+        plot_v[popInh.id] = []
+
+    if num_exc2>0:
+        exc2_traces = '%s_%s_v.dat'%(network.id,popExc2.id)
+        save_v[exc2_traces] = []
+        plot_v[popExc2.id] = []
+
+    if num_inh2>0:
+        inh2_traces = '%s_%s_v.dat'%(network.id,popInh2.id)
+        save_v[inh2_traces] = []
+        plot_v[popInh2.id] = []
+
+
+    for i in range(min(max_in_pop_to_plot_and_save,num_exc)):
+        plot_v[popExc.id].append("%s/%i/%s/v"%(popExc.id,i,popExc.component))
+        save_v[exc_traces].append("%s/%i/%s/v"%(popExc.id,i,popExc.component))
+
+    for i in range(min(max_in_pop_to_plot_and_save,num_exc2)):
+        plot_v[popExc2.id].append("%s/%i/%s/v"%(popExc2.id,i,popExc2.component))
+        save_v[exc2_traces].append("%s/%i/%s/v"%(popExc2.id,i,popExc2.component))
+
+    for i in range(min(max_in_pop_to_plot_and_save,num_inh)):
+        plot_v[popInh.id].append("%s/%i/%s/v"%(popInh.id,i,popInh.component))
+        save_v[inh_traces].append("%s/%i/%s/v"%(popInh.id,i,popInh.component))
+
+    for i in range(min(max_in_pop_to_plot_and_save,num_inh2)):
+        plot_v[popInh2.id].append("%s/%i/%s/v"%(popInh2.id,i,popInh2.component))
+        save_v[inh2_traces].append("%s/%i/%s/v"%(popInh2.id,i,popInh2.component))
+
+    gen_spike_saves_for_all_somas = run_in_simulator!='jNeuroML_NetPyNE'
+
+    lems_file_name, lems_sim = oc.generate_lems_simulation(nml_doc, network, 
+                            target_dir+nml_file_name, 
+                            duration =      duration, 
+                            dt =            dt,
+                            gen_plots_for_all_v = False,
+                            gen_plots_for_quantities = plot_v,
+                            gen_saves_for_all_v = False,
+                            gen_saves_for_quantities = save_v,
+                            gen_spike_saves_for_all_somas = gen_spike_saves_for_all_somas,
+                            target_dir=target_dir)
+
+
+    if run_in_simulator:
+
+        print ("Running %s for %sms in %s"%(lems_file_name, duration, run_in_simulator))
+
+        traces, events = oc.simulate_network(lems_file_name,
+                 run_in_simulator,
+                 max_memory='4000M',
+                 nogui=True,
+                 load_saved_data=True,
+                 reload_events=True,
+                 plot=False,
+                 verbose=True,
+                 num_processors=num_processors)
+
+
+        print("Reloaded traces: %s"%traces.keys())
+        #print("Reloaded events: %s"%events.keys())
+
+        use_events_for_rates = False
+
+        exc_rate = 0
+        inh_rate = 0
+
+        if use_events_for_rates:
+            if (run_in_simulator=='jNeuroML_NetPyNE'):
+                raise('Saving of spikes (and so calculation of rates) not yet supported in jNeuroML_NetPyNE')
+            for ek in events.keys():
+                rate = 1000 * len(events[ek])/float(duration)
+                print("Cell %s has a rate %s Hz"%(ek,rate))
+                if 'popExc' in ek:
+                    exc_rate += rate/num_exc
+                if 'popInh' in ek:
+                    inh_rate += rate/num_inh
+
+        else:
+            tot_exc_rate = 0 
+            exc_cells = 0
+            tot_inh_rate = 0 
+            inh_cells = 0
+            tt = [t*1000 for t in traces['t']]
+            for tk in traces.keys():
+                if tk!='t':
+                    rate = get_rate_from_trace(tt,[v*1000 for v in traces[tk]])
+                    print("Cell %s has rate %s Hz"%(tk,rate))
+                    if 'popExc' in tk:
+                        tot_exc_rate += rate
+                        exc_cells+=1
+                    if 'popInh' in tk:
+                        tot_inh_rate += rate
+                        inh_cells+=1
+
+            exc_rate = tot_exc_rate/exc_cells
+            inh_rate = tot_inh_rate/inh_cells
+
+
+
+        print("Run %s: Exc rate: %s Hz; Inh rate %s Hz"%(reference,exc_rate, inh_rate))
+
+        return exc_rate, inh_rate, traces
         
-        
-        save_v = {}
-        plot_v = {}
-        
-        if num_exc>0:
-            exc_traces = '%s_%s_v.dat'%(network.id,popExc.id)
-            save_v[exc_traces] = []
-            plot_v[popExc.id] = []
-            
-        if num_inh>0:
-            inh_traces = '%s_%s_v.dat'%(network.id,popInh.id)
-            save_v[inh_traces] = []
-            plot_v[popInh.id] = []
-            
-        if num_exc2>0:
-            exc2_traces = '%s_%s_v.dat'%(network.id,popExc2.id)
-            save_v[exc2_traces] = []
-            plot_v[popExc2.id] = []
-            
-        if num_inh2>0:
-            inh2_traces = '%s_%s_v.dat'%(network.id,popInh2.id)
-            save_v[inh2_traces] = []
-            plot_v[popInh2.id] = []
-        
-        
-        for i in range(min(max_in_pop_to_plot_and_save,num_exc)):
-            plot_v[popExc.id].append("%s/%i/%s/v"%(popExc.id,i,popExc.component))
-            save_v[exc_traces].append("%s/%i/%s/v"%(popExc.id,i,popExc.component))
-            
-        for i in range(min(max_in_pop_to_plot_and_save,num_exc2)):
-            plot_v[popExc2.id].append("%s/%i/%s/v"%(popExc2.id,i,popExc2.component))
-            save_v[exc2_traces].append("%s/%i/%s/v"%(popExc2.id,i,popExc2.component))
-            
-        for i in range(min(max_in_pop_to_plot_and_save,num_inh)):
-            plot_v[popInh.id].append("%s/%i/%s/v"%(popInh.id,i,popInh.component))
-            save_v[inh_traces].append("%s/%i/%s/v"%(popInh.id,i,popInh.component))
-            
-        for i in range(min(max_in_pop_to_plot_and_save,num_inh2)):
-            plot_v[popInh2.id].append("%s/%i/%s/v"%(popInh2.id,i,popInh2.component))
-            save_v[inh2_traces].append("%s/%i/%s/v"%(popInh2.id,i,popInh2.component))
-            
-        gen_spike_saves_for_all_somas = run_in_simulator!='jNeuroML_NetPyNE'
-            
-        lems_file_name = oc.generate_lems_simulation(nml_doc, network, 
-                                target_dir+nml_file_name, 
-                                duration =      duration, 
-                                dt =            dt,
-                                gen_plots_for_all_v = False,
-                                gen_plots_for_quantities = plot_v,
-                                gen_saves_for_all_v = False,
-                                gen_saves_for_quantities = save_v,
-                                gen_spike_saves_for_all_somas = gen_spike_saves_for_all_somas,
-                                target_dir=target_dir)
-                                
-        
-        if run_in_simulator:
-            
-            print ("Running %s for %sms in %s"%(lems_file_name, duration, run_in_simulator))
-            
-            traces, events = oc.simulate_network(lems_file_name,
-                     run_in_simulator,
-                     max_memory='4000M',
-                     nogui=True,
-                     load_saved_data=True,
-                     reload_events=True,
-                     plot=False,
-                     verbose=False,
-                     num_processors=num_processors)
-                     
-                     
-            print("Reloaded traces: %s"%traces.keys())
-            #print("Reloaded events: %s"%events.keys())
-            
-            use_events_for_rates = False
-            
-            exc_rate = 0
-            inh_rate = 0
-            
-            if use_events_for_rates:
-                if (run_in_simulator=='jNeuroML_NetPyNE'):
-                    raise('Saving of spikes (and so calculation of rates) not yet supported in jNeuroML_NetPyNE')
-                for ek in events.keys():
-                    rate = 1000 * len(events[ek])/float(duration)
-                    print("Cell %s has rate %s Hz"%(ek,rate))
-                    if 'popExc' in ek:
-                        exc_rate += rate/num_exc
-                    if 'popInh' in ek:
-                        inh_rate += rate/num_inh
-            
-            else:
-                tot_exc_rate = 0 
-                exc_cells = 0
-                tot_inh_rate = 0 
-                inh_cells = 0
-                tt = [t*1000 for t in traces['t']]
-                for tk in traces.keys():
-                    if tk!='t':
-                        rate = get_rate_from_trace(tt,[v*1000 for v in traces[tk]])
-                        print("Cell %s has rate %s Hz"%(tk,rate))
-                        if 'popExc' in tk:
-                            tot_exc_rate += rate
-                            exc_cells+=1
-                        if 'popInh' in tk:
-                            tot_inh_rate += rate
-                            inh_cells+=1
-                            
-                exc_rate = tot_exc_rate/exc_cells
-                inh_rate = tot_inh_rate/inh_cells
-                    
-                    
-                    
-            print("Run %s: Exc rate: %s Hz; Inh rate %s Hz"%(reference,exc_rate, inh_rate))
-                     
-            return exc_rate, inh_rate, traces
-        
-    else:
-        lems_file_name = None
                                 
     return nml_doc, nml_file_name, lems_file_name
                         
@@ -487,7 +483,7 @@ def get_rate_from_trace(times, volts):
 
         analysed = analysis_data.analyse()
 
-        pp.pprint(analysed)
+        #pp.pprint(analysed)
 
         return analysed['mean_spike_frequency']
     
@@ -736,27 +732,31 @@ if __name__ == '__main__':
         percent_inh_pert = 0.75
         
         Be = .1
-        Bi = -.2*1
+        Bi = -.2
         Be_bkg = .1
         Be_stim = .1
         
-        scale_up = 5
-        Be*=scale_up
-        Bi*=scale_up
-        Be_bkg*=scale_up
-        Be_stim*=scale_up
+        SCALE_UP_SYN_CONDS = 5
+        Be*=SCALE_UP_SYN_CONDS
+        Bi*=SCALE_UP_SYN_CONDS
+        Be_bkg*=SCALE_UP_SYN_CONDS
+        Be_stim*=SCALE_UP_SYN_CONDS
         
         Bee = Be
         Bei = Be
         Bie = Bi
         Bii = Bi
         
+        scale_populations = 20 # 20 for 2000 cells total
+        run_in_simulator = None
+        
         if '-test' in sys.argv:   
             #r_bkg = 20
             r_stim = -2000
             
             percent_inh_pert = .75
-            scale_populations = 2
+            scale_populations = 1
+            run_in_simulator = 'jNeuroML_NEURON'
             
         
         generate(Bee = Bee,
@@ -771,6 +771,7 @@ if __name__ == '__main__':
                  duration = 1000,
                  dt = 0.025,
                  scale_populations=scale_populations,
-                 format='xml',
+                 format='hdf5',
                  percentage_exc_detailed=0,
-                 target_dir='./temp/')
+                 target_dir='./temp/',
+                 run_in_simulator=run_in_simulator)
