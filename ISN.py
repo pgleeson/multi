@@ -3,7 +3,6 @@ Generates a NeuroML 2 file with many types of cells, populations and inputs
 for testing purposes
 '''
 
-import opencortex
 import opencortex.core as oc
 
 import opencortex.utils.color as occ
@@ -11,14 +10,9 @@ import opencortex.utils.color as occ
 import sys
 import math
 
-import numpy as np
 import pylab as pl
-from pyneuroml import pynml
 
 from pyelectro import analysis
-import pprint
-
-pp = pprint.PrettyPrinter(indent=4)
 
 min_pop_size = 1
 
@@ -97,6 +91,7 @@ def generate(scale_populations = 1,
     
     #inh_cell_id = 'AllenHH_485058595'
     inh_cell_id = 'AllenHH_476686112'
+    #inh_cell_id = 'AllenHH_477127614'
     #inh_cell_id = 'HH_476686112'
     inh_type = exc_cell_id.split('_')[0]
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(inh_type,inh_cell_id), inh_cell_id)
@@ -214,6 +209,8 @@ def generate(scale_populations = 1,
         inh_exc_conn_prob = 1
         inh_inh_conn_prob = 1
         
+        weight_expr = 'abs(normal(1,0.5))'
+        
         for popEpr in allExc:
             
             for popEpo in allExc:
@@ -221,14 +218,16 @@ def generate(scale_populations = 1,
                                       popEpr, popEpo,
                                       synAmpaEE.id, exc_exc_conn_prob, 
                                       global_delay,
-                                      exc_target_dendrites)
+                                      exc_target_dendrites,
+                                      weight_expr)
                                                 
             for popIpo in allInh:
                 proj = add_projection(network, "projEI",
                                       popEpr, popIpo,
                                       synAmpaEI.id, exc_inh_conn_prob, 
                                       global_delay,
-                                      exc_target_dendrites)
+                                      exc_target_dendrites,
+                                      weight_expr)
 
             
         for popIpr in allInh:
@@ -238,14 +237,16 @@ def generate(scale_populations = 1,
                                       popIpr, popEpo,
                                       synGabaIE.id, inh_exc_conn_prob, 
                                       global_delay,
-                                      inh_target_dendrites)
+                                      inh_target_dendrites,
+                                      weight_expr)
         
             for popIpo in allInh:
                 proj = add_projection(network, "projII",
                                       popIpr, popIpo,
                                       synGabaII.id, inh_inh_conn_prob, 
                                       global_delay,
-                                      inh_target_dendrites)
+                                      inh_target_dendrites,
+                                      weight_expr)
 
                                         
 
@@ -366,7 +367,8 @@ def generate(scale_populations = 1,
                             gen_saves_for_all_v = False,
                             gen_saves_for_quantities = save_v,
                             gen_spike_saves_for_all_somas = gen_spike_saves_for_all_somas,
-                            target_dir=target_dir)
+                            target_dir=target_dir,
+                            report_file_name='report.txt')
 
 
     if run_in_simulator:
@@ -440,7 +442,8 @@ def add_projection(network,
                    syn_id,
                    conn_prob,
                    delay,
-                   target_dendrites):
+                   target_dendrites,
+                   weight_expr=1):
 
 
     if pop_post.size > pop_pre.size:
@@ -465,7 +468,8 @@ def add_projection(network,
                                     pre_segment_group = 'soma_group',
                                     post_segment_group = post_segment_group,
                                     number_conns_per_cell=num_connections,
-                                    delays_dict = {syn_id:delay})
+                                    delays_dict = {syn_id:delay},
+                                    weights_dict = {syn_id:weight_expr})
     return proj
        
 def get_rate_from_trace(times, volts):
@@ -661,11 +665,13 @@ if __name__ == '__main__':
         Be_bkg = .1
         Be_stim = .1
         
-        SCALE_UP_SYN_CONDS = 5
-        Be*=SCALE_UP_SYN_CONDS
-        Bi*=SCALE_UP_SYN_CONDS
-        Be_bkg*=SCALE_UP_SYN_CONDS
-        Be_stim*=SCALE_UP_SYN_CONDS
+        SCALE_UP_EXT_CONDS = 5
+        SCALE_UP_INT_CONDS = 5
+        
+        Be*=SCALE_UP_INT_CONDS
+        Bi*=SCALE_UP_INT_CONDS
+        Be_bkg*=SCALE_UP_EXT_CONDS
+        Be_stim*=SCALE_UP_EXT_CONDS
         
         Bee = Be
         Bei = Be
@@ -674,13 +680,21 @@ if __name__ == '__main__':
         
         scale_populations = 20 # 20 for 2000 cells total
         run_in_simulator = None
+        format = 'hdf5'
         
         if '-test' in sys.argv:   
-            #r_bkg = 20
-            r_stim = -2000
+            r_bkg = 10000
+            r_stim = -1*r_bkg + 100
             
             percent_inh_pert = .75
             scale_populations = 1
+            
+            #Bee = 0
+            #Bei = 0 
+            #Bie = 0
+            #Bii = 0
+            format = 'xml'
+            
             
         if '-neuron' in sys.argv: 
             run_in_simulator = 'jNeuroML_NEURON'
@@ -701,7 +715,7 @@ if __name__ == '__main__':
                  duration = 1000,
                  dt = 0.025,
                  scale_populations=scale_populations,
-                 format='hdf5',
+                 format=format,
                  percentage_exc_detailed=0,
                  target_dir='./temp/',
                  run_in_simulator=run_in_simulator)
