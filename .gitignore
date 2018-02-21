@@ -51,3 +51,16 @@
 /NeuroML2/*.cell.json
 /NeuroML2/*.input.json
 /NeuroML2/*.synapse.json
+/*.hoc
+/*.mod
+/ISN_net.net.nml
+/ISN_net/
+/x86_64
+/jsbml.log
+/libjhdf5.so
+/*.spikes
+/LEMS_ISN_net.xml
+/LEMS_ISN_net_netpyne.py
+/LEMS_ISN_net_nrn.py
+/report.txt
+/*.dat
