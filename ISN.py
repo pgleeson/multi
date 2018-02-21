@@ -592,7 +592,7 @@ if __name__ == '__main__':
         
         run_in_simulator='jNeuroML_NEURON'
         run_in_simulator='jNeuroML_NetPyNE'
-        num_processors = 18
+        num_processors = 18    # Only used for NetPyNE
         
         
         quick = False
@@ -605,18 +605,17 @@ if __name__ == '__main__':
         if quick:
             g_rng = [1,2,4]
             #g_rng = [.5, 1, 2, 4, 8]
-            #i_rng = [250,300]
             rates_bkg = [2000, 5000, 10000., 15000, 20000]
             rates_bkg = [5000,10000.,20000]
             
             trace_highlight = [(g_rng[0],rates_bkg[0])]
             
             duration = 1000
-            scale_populations = 5
+            scale_populations = 1
             
             run_in_simulator='jNeuroML_NEURON'
             run_in_simulator='jNeuroML_NetPyNE'
-            num_processors = 16
+            num_processors = 2  # Only used for NetPyNE
             format = 'xml'
 
 
@@ -728,7 +727,6 @@ if __name__ == '__main__':
 
         _plot_(Rexc.T, g_rng, rates_bkg, 221, 'Rates Exc (Hz)')
         _plot_(Rinh.T, g_rng, rates_bkg, 222, 'Rates Inh (Hz)')
-        
         
 
         pl.subplots_adjust(wspace=.3, hspace=.3)
