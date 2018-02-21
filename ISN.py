@@ -9,6 +9,7 @@ import opencortex.utils.color as occ
 
 import sys
 import math
+import os
 
 import pylab as pl
 
@@ -366,7 +367,7 @@ def generate(scale_populations = 1,
         plot_v[popInh2.id].append("%s/%i/%s/v"%(popInh2.id,i,popInh2.component))
         save_v[inh2_traces].append("%s/%i/%s/v"%(popInh2.id,i,popInh2.component))
 
-    gen_spike_saves_for_all_somas = run_in_simulator!='jNeuroML_NetPyNE'
+    gen_spike_saves_for_all_somas = True
 
     lems_file_name, lems_sim = oc.generate_lems_simulation(nml_doc, network, 
                             target_dir+nml_file_name, 
@@ -602,29 +603,32 @@ if __name__ == '__main__':
         trace_highlight = [(2,10000)]
         
         if quick:
-            g_rng = [2]
-            g_rng = [.5, 1, 2, 4, 8]
+            g_rng = [1,2,4]
+            #g_rng = [.5, 1, 2, 4, 8]
             #i_rng = [250,300]
             rates_bkg = [2000, 5000, 10000., 15000, 20000]
+            rates_bkg = [5000,10000.,20000]
+            
             trace_highlight = [(g_rng[0],rates_bkg[0])]
             
             duration = 1000
-            scale_populations = 2
+            scale_populations = 5
             
             run_in_simulator='jNeuroML_NEURON'
             run_in_simulator='jNeuroML_NetPyNE'
-            num_processors = 12
+            num_processors = 16
             format = 'xml'
 
 
         Rexc = np.zeros((len(g_rng), len(rates_bkg)))
         Rinh = np.zeros((len(g_rng), len(rates_bkg)))
         
-        desc = '%s_%s_%sms'%(run_in_simulator,scale_populations, duration)
         
         count=1
         for i1, g in enumerate(g_rng):
             for i2, rb in enumerate(rates_bkg):
+                desc0 = '%s_%s_%sms'%(run_in_simulator,scale_populations, duration)
+                desc = '%s_%s_%s'%(desc0,g,rb)
                 print("====================================")
                 highlight = False
                 for h in trace_highlight:
@@ -648,7 +652,24 @@ if __name__ == '__main__':
                          format=format,
                          percentage_exc_detailed=0,
                          target_dir='./',
-                         run_in_simulator=run_in_simulator)
+                         run_in_simulator=run_in_simulator,
+                         num_processors=num_processors)
+                         
+                
+                if not os.path.exists('results'):
+                    os.makedirs('results')
+                save_dir = 'results'
+                #if not os.path.exists(save_dir):
+                #    os.makedirs(save_dir)
+                
+                print('Finished sim, saving the spike plots to: %s'%save_dir)
+                
+                from pyneuroml.plot.PlotSpikes import run
+                
+                run(spiketime_files=['Sim_ISN_net.popExc.spikes','Sim_ISN_net.popInh.spikes'],
+                    save_spike_plot_to='%s/%s_spiketimes.png'%(save_dir,desc),
+                    show_plots_already=False)
+                
                     
                 Rexc[i1,i2] = info[0]
                 Rinh[i1,i2] = info[1]
@@ -713,7 +734,7 @@ if __name__ == '__main__':
         pl.subplots_adjust(wspace=.3, hspace=.3)
 
 
-        pl.savefig("%s_rates.png"%desc, bbox_inches='tight')
+        pl.savefig("%s_rates.png"%desc0, bbox_inches='tight')
         print("Finished: "+info)
         pl.show()
         
