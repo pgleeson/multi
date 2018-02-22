@@ -4,7 +4,7 @@ for testing purposes
 '''
 
 import opencortex.core as oc
-
+import shutil
 import opencortex.utils.color as occ
 
 import sys
@@ -57,7 +57,7 @@ def generate(scale_populations = 1,
              Be_stim = .1,
              r_bkg = 0,
              r_stim = 0,
-             percent_inh_pert=0.75,
+             fraction_inh_pert=0.75,
              connections=True,
              exc_target_dendrites=False,
              inh_target_dendrites=False,
@@ -76,10 +76,10 @@ def generate(scale_populations = 1,
     
     print('-------------------------------------------------')
     print('  Generating ISN network: %s'%reference)
-    print('    Duration: %s; dt: %s; scale: %s; simulator: %s'%(duration, dt, scale_populations, run_in_simulator))
+    print('    Duration: %s; dt: %s; scale: %s; simulator: %s (num proc. %s)'%(duration, dt, scale_populations, run_in_simulator, num_processors))
     print('    Bee: %s; Bei: %s; Bie: %s; Bii: %s'%(Bee,Bei,Bie,Bii))
     print('    Be_bkg: %s at %sHz'%(Be_bkg,r_bkg))
-    print('    Be_stim: %s at %sHz (so %sHz for perterbed I cells)'%(Be_stim,r_stim, r_bkg+r_stim))
+    print('    Be_stim: %s at %sHz (i.e. %sHz for %s perturbed I cells)'%(Be_stim,r_stim, r_bkg+r_stim, fraction_inh_pert))
     print('-------------------------------------------------')
                     
 
@@ -279,7 +279,7 @@ def generate(scale_populations = 1,
                         
     for pop in allInh:
         
-        num_inh_pert = int(pop.get_size()*percent_inh_pert)
+        num_inh_pert = int(pop.get_size()*fraction_inh_pert)
            
         oc.add_inputs_to_population(network, "Stim_I_pert_%s"%pop.id,
                                     pop, tpfsC.id,
@@ -506,14 +506,14 @@ def get_rate_from_trace(times, volts):
         return 0
 
                          
-def _plot_(X, g_rng, rates_bkg, sbplt=111, ttl=[]):
+def _plot_(X, E, I, sbplt=111, ttl=[]):
     ax = pl.subplot(sbplt)
     pl.title(ttl)
     pl.imshow(X, origin='lower', interpolation='none')
-    pl.xlabel('Ratio inh/exc')
-    pl.ylabel('Input (Hz)')
-    ax.set_xticks(range(0,len(g_rng))); ax.set_xticklabels(g_rng)
-    ax.set_yticks(range(0,len(rates_bkg))); ax.set_yticklabels(rates_bkg)
+    pl.xlabel('Exc weight')
+    pl.ylabel('Inh weight')
+    ax.set_xticks(range(0,len(E))); ax.set_xticklabels(E)
+    ax.set_yticks(range(0,len(I))); ax.set_yticklabels(I)
     pl.colorbar()
 
 
@@ -524,7 +524,7 @@ if __name__ == '__main__':
     # rate of perturbation (sp/s)
     r_stim = -400.
 
-    percent_inh_pert = 0.75
+    fraction_inh_pert = 0.75
 
     Be = .1
     Bi = -.2
@@ -549,27 +549,38 @@ if __name__ == '__main__':
     format = 'hdf5'
 
     if '-test' in sys.argv:   
-        r_bkg = 10000
-        r_stim = -1*r_bkg + 100
+        r_bkg = 10000-400.
+        r_stim = -4000
 
-        percent_inh_pert = .75
+        fraction_inh_pert = .75
         scale_populations = 1
 
-        #Bee = 0
-        #Bei = 0 
-        #Bie = 0
-        #Bii = 0
+        Bee = .2
+        Bei = .2
+        Bie = 4
+        Bii = 4
         format = 'xml'
 
-
+    num_processors = 1
     if '-neuron' in sys.argv: 
         run_in_simulator = 'jNeuroML_NEURON'
 
     if '-netpyne' in sys.argv: 
         run_in_simulator = 'jNeuroML_NetPyNE'
+        num_processors = 4
              
              
-    if not '-paramSweep' in sys.argv:     
+    if '-detailed1' in sys.argv:     
+        
+        scale_populations = .2
+        run_in_simulator='jNeuroML_NetPyNE'
+        num_processors = 16    # Only used for NetPyNE
+        percentage_exc_detailed = 100
+        
+        Bee = 0
+        Bei = 0
+        Bie = 0
+        Bii = 0
         
         generate(Bee = Bee,
                  Bei = Bei,
@@ -579,72 +590,109 @@ if __name__ == '__main__':
                  Be_stim = Be_stim,
                  r_bkg = r_bkg,
                  r_stim = r_stim,
-                 percent_inh_pert=percent_inh_pert,
+                 fraction_inh_pert=fraction_inh_pert,
+                 duration = 1000,
+                 dt = 0.025,
+                 scale_populations=scale_populations,
+                 format=format,
+                 percentage_exc_detailed=percentage_exc_detailed,
+                 target_dir='./',
+                 run_in_simulator=run_in_simulator,
+                 num_processors=num_processors)
+             
+    elif not '-paramSweep' in sys.argv:     
+        
+        generate(Bee = Bee,
+                 Bei = Bei,
+                 Bie = Bie,
+                 Bii = Bii,
+                 Be_bkg = Be_bkg,
+                 Be_stim = Be_stim,
+                 r_bkg = r_bkg,
+                 r_stim = r_stim,
+                 fraction_inh_pert=fraction_inh_pert,
                  duration = 1000,
                  dt = 0.025,
                  scale_populations=scale_populations,
                  format=format,
                  percentage_exc_detailed=0,
-                 target_dir='./',
-                 run_in_simulator=run_in_simulator)
+                 target_dir='./temp/',
+                 run_in_simulator=run_in_simulator,
+                 num_processors=num_processors)
         
     else:
         
         run_in_simulator='jNeuroML_NEURON'
         run_in_simulator='jNeuroML_NetPyNE'
-        num_processors = 18    # Only used for NetPyNE
+        num_processors = 16    # Only used for NetPyNE
+        format = 'hdf5'
         
         
-        quick = False
-        quick = True
+        e_vals = [0, .1, .2, .5, 1, 2, 4, 8, 16]
+        i_vals = [0, .1, .2, .5, 1, 2, 4, 8, 16]
+        trace_highlight = [(e_vals[3],i_vals[4])]
+        duration = 1000
         
-        g_rng = np.arange(.5, 4.5, .5)
-        #i_rng = np.arange(50, 400, 50)
-        trace_highlight = [(2,10000)]
+        scale_populations = 20
+
+        results_save_dir = 'results'
+        if not os.path.exists(results_save_dir):
+            os.makedirs(results_save_dir)
+        
+        quick = '-quick' in sys.argv
         
         if quick:
-            g_rng = [1,2,4]
-            #g_rng = [.5, 1, 2, 4, 8]
-            rates_bkg = [2000, 5000, 10000., 15000, 20000]
-            rates_bkg = [5000,10000.,20000]
             
-            trace_highlight = [(g_rng[0],rates_bkg[0])]
+            e_vals = [1,2]
+            #e_vals = [0,1,2]
             
-            duration = 1000
+            i_vals = [1,2]
+            #i_vals = [0,1,2]
+            
+            trace_highlight = [(e_vals[0],i_vals[0])]
+            
             scale_populations = 1
             
             run_in_simulator='jNeuroML_NEURON'
             run_in_simulator='jNeuroML_NetPyNE'
-            num_processors = 2  # Only used for NetPyNE
+            num_processors = 4  # Only used for NetPyNE
             format = 'xml'
 
 
-        Rexc = np.zeros((len(g_rng), len(rates_bkg)))
-        Rinh = np.zeros((len(g_rng), len(rates_bkg)))
+        Rexc = np.zeros((len(e_vals), len(i_vals)))
+        Rinh = np.zeros((len(e_vals), len(i_vals)))
         
+        desc0 = '%s_%s_%sms'%(run_in_simulator,scale_populations, duration)
+        report=open('%s/Report_%s.html'%(results_save_dir,desc0),'w')
+        report.write('<html>\n <title>%s</title>\n <body>\n  <table>\n'%desc0)
         
         count=1
-        for i1, g in enumerate(g_rng):
-            for i2, rb in enumerate(rates_bkg):
-                desc0 = '%s_%s_%sms'%(run_in_simulator,scale_populations, duration)
-                desc = '%s_%s_%s'%(desc0,g,rb)
+        for i1, E in enumerate(e_vals):
+            
+            report.write('   <tr>\n')
+            
+            for i2, I in enumerate(i_vals):
+                
+                report.write('    <td>')
+                
+                desc = '%s_E%s_I%s'%(desc0,E,I)
                 print("====================================")
                 highlight = False
                 for h in trace_highlight:
-                    if h[0]==g and h[1]==rb:
+                    if h[0]==E and h[1]==I:
                         highlight = True
                         
-                print(" Run %s of %s: scale=%s; g=%s; rb=%s (highlighting: %s)"%(count, len(g_rng)*len(rates_bkg), scale_populations, g, rb, highlight))
+                print(" Run %s of %s: scale=%s; E=%s; I=%s (highlighting: %s)"%(count, len(e_vals)*len(i_vals), scale_populations, E, I, highlight))
                 
-                info = generate(Bee = Be,
-                         Bei = Be,
-                         Bie = Be*g,
-                         Bii = Be*g,
+                info = generate(Bee = E,
+                         Bei = E,
+                         Bie = I,
+                         Bii = I,
                          Be_bkg = Be_bkg,
                          Be_stim = Be_stim,
-                         r_bkg = rb,
+                         r_bkg = r_bkg,
                          r_stim = r_stim,
-                         percent_inh_pert=percent_inh_pert,
+                         fraction_inh_pert=fraction_inh_pert,
                          duration = duration,
                          dt = 0.025,
                          scale_populations=scale_populations,
@@ -655,19 +703,23 @@ if __name__ == '__main__':
                          num_processors=num_processors)
                          
                 
-                if not os.path.exists('results'):
-                    os.makedirs('results')
-                save_dir = 'results'
-                #if not os.path.exists(save_dir):
-                #    os.makedirs(save_dir)
                 
-                print('Finished sim, saving the spike plots to: %s'%save_dir)
+                print('Finished sim, saving the spike plots to: %s'%results_save_dir)
                 
                 from pyneuroml.plot.PlotSpikes import run
                 
-                run(spiketime_files=['Sim_ISN_net.popExc.spikes','Sim_ISN_net.popInh.spikes'],
-                    save_spike_plot_to='%s/%s_spiketimes.png'%(save_dir,desc),
+                spiketime_files = ['Sim_ISN_net.popExc.spikes','Sim_ISN_net.popInh.spikes']
+                spike_png = '%s_spiketimes.png'%(desc)
+                spike_png_full = '%s/%s'%(results_save_dir,spike_png)
+                
+                run(spiketime_files=spiketime_files,
+                    save_spike_plot_to=spike_png_full,
                     show_plots_already=False)
+                
+                report.write('<a href="%s"><img alt=" " src="%s" height="300"/></a></td>\n'%(spike_png,spike_png))
+                    
+                for f in spiketime_files:
+                    shutil.copyfile(f, '%s/%s_%s'%(results_save_dir,desc,f))
                 
                     
                 Rexc[i1,i2] = info[0]
@@ -707,9 +759,8 @@ if __name__ == '__main__':
                                 tr_shade_i*=0.8
                                 
                     
-                    print(colours)
                     pynml.generate_plot(all_t, all_v, 
-                                        "Sim g=%s, rb=%s"%(g,rb),
+                                        "Sim E=%s, I=%s"%(E,I),
                                         colors=colours,
                                         show_plot_already=False,
                                         xaxis = 'Time (ms)',            # x axis legend
@@ -717,7 +768,11 @@ if __name__ == '__main__':
                                         save_figure_to='%s_traces.png'%desc)
                 count+=1
                     
+                report.flush() # write partial html to file... 
                 
+            report.write('  </tr>\n')
+        report.write('  </table>\n</html>')
+        report.close()
 
         fig = pl.figure(figsize=(16,8))
         info = "%s: scale %s, %s ms"%(run_in_simulator,scale_populations, duration)
@@ -725,8 +780,8 @@ if __name__ == '__main__':
         fig.canvas.set_window_title(info)
         pl.suptitle(info)
 
-        _plot_(Rexc.T, g_rng, rates_bkg, 221, 'Rates Exc (Hz)')
-        _plot_(Rinh.T, g_rng, rates_bkg, 222, 'Rates Inh (Hz)')
+        _plot_(Rexc.T, e_vals, i_vals, 221, 'Rates Exc (Hz)')
+        _plot_(Rinh.T, e_vals, i_vals, 222, 'Rates Inh (Hz)')
         
 
         pl.subplots_adjust(wspace=.3, hspace=.3)
