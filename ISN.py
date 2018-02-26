@@ -80,6 +80,7 @@ def generate(scale_populations = 1,
     print('    Bee: %s; Bei: %s; Bie: %s; Bii: %s'%(Bee,Bei,Bie,Bii))
     print('    Be_bkg: %s at %sHz'%(Be_bkg,r_bkg))
     print('    Be_stim: %s at %sHz (i.e. %sHz for %s perturbed I cells)'%(Be_stim,r_stim, r_bkg+r_stim, fraction_inh_pert))
+    print('    Exc detailed: %s%% - Inh detailed %s%%'%(percentage_exc_detailed,percentage_inh_detailed))
     print('-------------------------------------------------')
                     
 
@@ -526,6 +527,7 @@ if __name__ == '__main__':
 
     fraction_inh_pert = 0.75
 
+    # Original values from curr based point network
     Be = .1
     Bi = -.2
     Be_bkg = .1
@@ -544,16 +546,25 @@ if __name__ == '__main__':
     Bie = Bi
     Bii = Bi
 
+    # Current best values
+    Bee = .2
+    Bei = .2
+    Bie = 4
+    Bii = 4
+    
     scale_populations = 20 # 20 for 2000 cells total
     run_in_simulator = None
     format = 'hdf5'
 
     if '-test' in sys.argv:   
         r_bkg = 10000-400.
-        r_stim = -4000
+        r_stim = -2000
+        
+        Be_bkg=0.5
+        Be_stim = Be_bkg
 
         fraction_inh_pert = .75
-        scale_populations = 1
+        scale_populations = 2
 
         Bee = .2
         Bei = .2
@@ -567,7 +578,7 @@ if __name__ == '__main__':
 
     if '-netpyne' in sys.argv: 
         run_in_simulator = 'jNeuroML_NetPyNE'
-        num_processors = 4
+        num_processors = 16
              
              
     if '-detailed1' in sys.argv:     
@@ -634,6 +645,11 @@ if __name__ == '__main__':
         duration = 1000
         
         scale_populations = 20
+        
+        Be_bkg=.5
+        Be_stim = Be_bkg
+        percentage_exc_detailed = 0
+        percentage_inh_detailed = 0
 
         results_save_dir = 'results'
         if not os.path.exists(results_save_dir):
@@ -643,26 +659,28 @@ if __name__ == '__main__':
         
         if quick:
             
-            e_vals = [1,2]
-            #e_vals = [0,1,2]
+            e_vals = [0,1,2]
+            #e_vals = [0,1,2,8]
             
-            i_vals = [1,2]
-            #i_vals = [0,1,2]
+            i_vals = [0,1,2]
+            #i_vals = [0,1,2,8]
             
             trace_highlight = [(e_vals[0],i_vals[0])]
             
-            scale_populations = 1
+            scale_populations = .3
             
             run_in_simulator='jNeuroML_NEURON'
             run_in_simulator='jNeuroML_NetPyNE'
-            num_processors = 4  # Only used for NetPyNE
+            num_processors = 16  # Only used for NetPyNE
             format = 'xml'
+            r_stim = -2000
+            percentage_exc_detailed = 0
 
 
         Rexc = np.zeros((len(e_vals), len(i_vals)))
         Rinh = np.zeros((len(e_vals), len(i_vals)))
         
-        desc0 = '%s_%s_%sms'%(run_in_simulator,scale_populations, duration)
+        desc0 = '%s_sc%s_bkg%s_det%s_%sms'%(run_in_simulator,scale_populations, Be_bkg, percentage_exc_detailed, duration)
         report=open('%s/Report_%s.html'%(results_save_dir,desc0),'w')
         report.write('<html>\n <title>%s</title>\n <body>\n  <table>\n'%desc0)
         
@@ -697,7 +715,7 @@ if __name__ == '__main__':
                          dt = 0.025,
                          scale_populations=scale_populations,
                          format=format,
-                         percentage_exc_detailed=0,
+                         percentage_exc_detailed=percentage_exc_detailed,
                          target_dir='./',
                          run_in_simulator=run_in_simulator,
                          num_processors=num_processors)
@@ -708,18 +726,27 @@ if __name__ == '__main__':
                 
                 from pyneuroml.plot.PlotSpikes import run
                 
-                spiketime_files = ['Sim_ISN_net.popExc.spikes','Sim_ISN_net.popInh.spikes']
+                spiketime_files = []
+                if percentage_exc_detailed<100: spiketime_files.append('Sim_ISN_net.popExc.spikes')
+                if percentage_exc_detailed>0: spiketime_files.append('Sim_ISN_net.popExc2.spikes')
+                if percentage_inh_detailed<100: spiketime_files.append('Sim_ISN_net.popInh.spikes')
+                if percentage_inh_detailed>0: spiketime_files.append('Sim_ISN_net.popInh2.spikes')
+                
                 spike_png = '%s_spiketimes.png'%(desc)
-                spike_png_full = '%s/%s'%(results_save_dir,spike_png)
+
+                png_dir = '%s/%s'%(results_save_dir,desc0)
+                if not os.path.exists(png_dir):
+                    os.makedirs(png_dir)
+                spike_png_full = '%s/%s'%(png_dir,spike_png)
                 
                 run(spiketime_files=spiketime_files,
                     save_spike_plot_to=spike_png_full,
                     show_plots_already=False)
                 
-                report.write('<a href="%s"><img alt=" " src="%s" height="300"/></a></td>\n'%(spike_png,spike_png))
+                report.write('<a href="%s/%s" title="E=%s; I=%s"><img alt=" " src="%s/%s" height="300"/></a></td>\n'%(desc0,spike_png,E,I,desc0,spike_png))
                     
                 for f in spiketime_files:
-                    shutil.copyfile(f, '%s/%s_%s'%(results_save_dir,desc,f))
+                    shutil.copyfile(f, '%s/%s_%s'%(png_dir,desc,f))
                 
                     
                 Rexc[i1,i2] = info[0]
