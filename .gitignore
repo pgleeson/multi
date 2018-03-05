@@ -67,3 +67,10 @@
 /results/
 /ISN_net.net.nml.h5
 /ISN_net.net.nml.h5.pov
+/cells/HH2/x86_64
+/cells/HH2/*.dat
+/cells/HH2/simulator.props
+/cells/HH2/*ne.py
+/cells/HH2/*.hoc
+/cells/HH2/*.mod
+/cells/HH2/*_nrn.py

@@ -31,7 +31,7 @@ def plot_cell_firing(cell_file, num_processors=1,quick=False,show_plot=True, plo
                                     title_above_plot =      True,
                                     save_voltage_traces_to = "%s_traces.png"%cell_id,
                                     show_plot_already=     show_plot,
-                                    verbose = True)
+                                    verbose = False)
                                     
     # Longer duration, more points 
     
@@ -58,7 +58,7 @@ def plot_cell_firing(cell_file, num_processors=1,quick=False,show_plot=True, plo
                                     save_if_data_to =      "%s_IF.dat"%cell_id,
                                     save_iv_data_to =      "%s_IV.dat"%cell_id,
                                     show_plot_already=     show_plot,
-                                    verbose = True)
+                                    verbose = False)
                                     
 
 
