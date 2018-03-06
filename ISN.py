@@ -97,6 +97,7 @@ def generate(scale_populations = 1,
     #exc_cell_id = 'AllenHH_480351780'
     exc_cell_id = 'AllenHH_477127614'
     #exc_cell_id = 'HH_477127614'
+    exc_cell_id = 'HH2_477127614'
     exc_type = exc_cell_id.split('_')[0]
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(exc_type,exc_cell_id), exc_cell_id)
     
@@ -105,6 +106,7 @@ def generate(scale_populations = 1,
     inh_cell_id = 'AllenHH_476686112'
     #inh_cell_id = 'AllenHH_477127614'
     #inh_cell_id = 'HH_476686112'
+    inh_cell_id = 'HH2_476686112'
     inh_type = exc_cell_id.split('_')[0]
     oc.include_neuroml2_cell_and_channels(nml_doc, 'cells/%s/%s.cell.nml'%(inh_type,inh_cell_id), inh_cell_id)
 
@@ -578,7 +580,7 @@ if __name__ == '__main__':
 
     if '-netpyne' in sys.argv: 
         run_in_simulator = 'jNeuroML_NetPyNE'
-        num_processors = 16
+        num_processors = 1
              
              
     if '-detailed1' in sys.argv:     
@@ -633,6 +635,8 @@ if __name__ == '__main__':
         
     else:
         
+        ## paramSweep
+        
         run_in_simulator='jNeuroML_NEURON'
         run_in_simulator='jNeuroML_NetPyNE'
         num_processors = 16    # Only used for NetPyNE
@@ -659,15 +663,17 @@ if __name__ == '__main__':
         
         if quick:
             
-            e_vals = [0,1,2]
+            e_vals = [0,.2,1]
+            #e_vals = [0,2,4]
             #e_vals = [0,1,2,8]
             
-            i_vals = [0,1,2]
+            i_vals = [0,2,4]
+            #i_vals = [2]
             #i_vals = [0,1,2,8]
             
             trace_highlight = [(e_vals[0],i_vals[0])]
             
-            scale_populations = .3
+            scale_populations = 5
             
             run_in_simulator='jNeuroML_NEURON'
             run_in_simulator='jNeuroML_NetPyNE'
