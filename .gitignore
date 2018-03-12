@@ -74,3 +74,6 @@
 /cells/HH2/*.hoc
 /cells/HH2/*.mod
 /cells/HH2/*_nrn.py
+/NGBW-JOB-*
+/input.zip
+/x*.xml
