@@ -1,8 +1,11 @@
 set -e
 
-# Build the NML
+number_cores_per_node_on_nsg=8
+number_nodes_on_nsg=8
+expected_duration='???' # TODO
 
-python ISN.py -test
+# Build the NML
+python ISN.py 
 
 # Generate Neuron or NetPyNE in temp folder
 cd temp
@@ -51,8 +54,8 @@ xml_str=$(curl -u $ADMIN_USERNAME:$ADMIN_PASSWORD \
      -F input.infile_=@input.zip \
      -F metadata.clientJobId=ISN \
      -F metadata.statusEmail=true \
-     -F vparam.number_cores_=8 \
-     -F vparam.number_nodes_=1 \
+     -F vparam.number_cores_=$number_cores_per_node_on_nsg \
+     -F vparam.number_nodes_=$number_nodes_on_nsg \
       $url)
       
       

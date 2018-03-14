@@ -20,7 +20,7 @@ url=$URL/job/$UMBRELLA_APPNAME.$USER_USERNAME/$job_id
 
 echo "Accessing: $url for user $ADMIN_USERNAME on behalf of $USER_USERNAME"
 
-xml_str=$(curl -u $ADMIN_USERNAME:$ADMIN_PASSWORD \
+xml_str=$(curl -s -u $ADMIN_USERNAME:$ADMIN_PASSWORD \
      -H cipres-appkey:$UMBRELLA_APPID \
      -H cipres-eu:$USER_USERNAME \
      -H cipres-eu-email:$USER_EMAIL \
@@ -28,20 +28,21 @@ xml_str=$(curl -u $ADMIN_USERNAME:$ADMIN_PASSWORD \
      -H cipres-eu-country:$USER_COUNTRY \
       $url)
       
-__='
+__=''
 echo "==============="
 echo "[$xml_str]"
 echo "==============="
-'
+
 
 job_stage=$(xmllint --xpath "string(//jobStage)"  - <<<"$xml_str")
-echo "Done checking job: " $job_stage
+echo
+echo "Finished checking job $job_id; status: $job_stage"
 
 if [ $job_stage = "COMPLETED" ]
 then
     echo "Downloading results of " $job_id
 
-    xml_str=$(curl -u $ADMIN_USERNAME:$ADMIN_PASSWORD \
+    xml_str=$(curl -s -u $ADMIN_USERNAME:$ADMIN_PASSWORD \
          -H cipres-appkey:$UMBRELLA_APPID \
          -H cipres-eu:$USER_USERNAME \
          -H cipres-eu-email:$USER_EMAIL \
