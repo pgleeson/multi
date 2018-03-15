@@ -49,7 +49,10 @@ then
          -H cipres-eu-institution:$USER_INSTITUTION \
          -H cipres-eu-country:$USER_COUNTRY \
           $URL/job/$UMBRELLA_APPNAME.$USER_USERNAME/$job_id/output)
-          
+
+    echo "==============="
+    echo "[$xml_str]"
+    echo "==============="
 
     output_url=$(xmllint --xpath "string(/results/jobfiles/jobfile[parameterName='outputfile']/downloadUri/url)"  - <<<"$xml_str")
 

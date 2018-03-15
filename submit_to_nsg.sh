@@ -1,13 +1,14 @@
 set -e
 
 number_cores_per_node_on_nsg=8
-number_nodes_on_nsg=8
-expected_duration='???' # TODO
+number_nodes_on_nsg=64
+expected_duration_hours=1 # Don't set this too large...
 
 # Build the NML
-python ISN.py 
+ python ISN_tuned.py  -Detailed_Soma    -perturbation 
 
 # Generate Neuron or NetPyNE in temp folder
+
 cd temp
 jnml LEMS_ISN_net.xml -netpyne
 
@@ -56,6 +57,7 @@ xml_str=$(curl -u $ADMIN_USERNAME:$ADMIN_PASSWORD \
      -F metadata.statusEmail=true \
      -F vparam.number_cores_=$number_cores_per_node_on_nsg \
      -F vparam.number_nodes_=$number_nodes_on_nsg \
+     -F vparam.runtime_=$expected_duration_hours \
       $url)
       
       
