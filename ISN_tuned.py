@@ -559,12 +559,17 @@ if __name__ == '__main__':
 
     if '-test' in sys.argv:  
         simtag = 'test'
-
+        
         r_bkg = 10000.
         r_stim = -200
         
         Be_bkg = 0.5
         Be_stim = Be_bkg
+
+        exc_exc_conn_prob = 0.25
+        exc_inh_conn_prob = 0.25
+        inh_exc_conn_prob = 0.75
+        inh_inh_conn_prob = 0.75
 
         scale_populations = .1#0
 
@@ -678,28 +683,31 @@ if __name__ == '__main__':
                                                     run_in_simulator=run_in_simulator,
                                                     num_processors=num_processors)
 
-            #
-            T = Ttrans+Tblank+Tstim
 
-            if NE_point != 0:
-                exc_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc.spikes')
-                spt_exc = exc_data[:,1]; spi_exc = exc_data[:,0];
-                exc_rate = len(spt_exc) /(T/1e3) /NE_point 
-            else: spt_exc = []; spi_exc = []; exc_rate = []
-             
-            if NE_detailed != 0:
-                exc2_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc2.spikes')
-                spt_exc2 = exc2_data[:,1]; spi_exc2 = exc2_data[:,0]; 
-                exc2_rate = len(spt_exc2) /(T/1e3) /NE_detailed
-            else: spt_exc2 = []; spi_exc2 = []; exc2_rate = []  
+            if run_in_simulator:
+                
+                T = Ttrans+Tblank+Tstim
 
-            inh_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popInh.spikes')
-            spt_inh = inh_data[:,1]; spi_inh = inh_data[:,0];
-            inh_rate = len(spt_inh) /(T/1e3) /NI
+                if NE_point != 0:
+                    exc_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc.spikes')
+                    spt_exc = exc_data[:,1]; spi_exc = exc_data[:,0];
+                    exc_rate = len(spt_exc) /(T/1e3) /NE_point 
+                else: spt_exc = []; spi_exc = []; exc_rate = []
 
-            r_out_exc.append(exc_rate)
-            r_out_exc2.append(exc2_rate)
-            r_out_inh.append(inh_rate)
+                if NE_detailed != 0:
+                    exc2_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc2.spikes')
+                    spt_exc2 = exc2_data[:,1]; spi_exc2 = exc2_data[:,0]; 
+                    exc2_rate = len(spt_exc2) /(T/1e3) /NE_detailed
+                    
+                else: spt_exc2 = []; spi_exc2 = []; exc2_rate = []  
+
+                inh_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popInh.spikes')
+                spt_inh = inh_data[:,1]; spi_inh = inh_data[:,0];
+                inh_rate = len(spt_inh) /(T/1e3) /NI
+
+                r_out_exc.append(exc_rate)
+                r_out_exc2.append(exc2_rate)
+                r_out_inh.append(inh_rate)
         
         results['r_out_exc'] = np.array(r_out_exc)
         results['r_out_exc2'] = np.array(r_out_exc2)
@@ -746,51 +754,53 @@ if __name__ == '__main__':
 
             T = Ttrans+Tblank+Tstim
             bw = 100; 
-
-            if NE_point != 0:
-                exc_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc.spikes')
-                spt_exc = exc_data[:,1]; spi_exc = exc_data[:,0];
-                hst_exc = np.histogram2d(spt_exc, spi_exc, range=((0,T/1e3),(0,NE_point-1)), bins=(T/bw,NE))
-            else: 
-                spt_exc = []; spi_exc = [];
-                hst_exc = np.histogram2d(spt_exc, spi_exc,range=((0,T/1e3),(0,NE_point)), bins=(T/bw,NE))
-
-            if NE_detailed != 0:
-                exc2_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc2.spikes')
-                spt_exc2 = exc2_data[:,1]; spi_exc2 = exc2_data[:,0]; 
-                hst_exc2 = np.histogram2d(spt_exc2, spi_exc2, range=((0,T/1e3),(0,NE_detailed-1)), bins=(T/bw,NE))
-            else: 
-                spt_exc2 = []; spi_exc2 = [];
-                hst_exc2 = np.histogram2d(spt_exc2, spi_exc2, range=((0,T/1e3),(0,NE_detailed)), bins=(T/bw,NE))
-
-            inh_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popInh.spikes')
-            spt_inh = inh_data[:,1]; spi_inh = inh_data[:,0];
-            hst_inh = np.histogram2d(spt_inh, spi_inh, range=((0,T/1e3),(0,NI-1)), bins=(T/bw,NI))
             
-            #
-            tt = hst_inh[1][0:-1] + np.diff(hst_inh[1])[0]/2
+            if run_in_simulator:
 
-            re_pop_point = np.nanmean(hst_exc[0], 1) /(bw/1e3)
-            re_pop_detailed = np.nanmean(hst_exc2[0], 1) /(bw/1e3)
-            ri_pop_pert = np.nanmean(hst_inh[0][:,0:NI_pert], 1) /(bw/1e3)
-            ri_pop_npert = np.nanmean(hst_inh[0][:,NI_pert:], 1) /(bw/1e3)  
+                if NE_point != 0:
+                    exc_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc.spikes')
+                    spt_exc = exc_data[:,1]; spi_exc = exc_data[:,0];
+                    hst_exc = np.histogram2d(spt_exc, spi_exc, range=((0,T/1e3),(0,NE_point-1)), bins=(T/bw,NE))
+                else: 
+                    spt_exc = []; spi_exc = [];
+                    hst_exc = np.histogram2d(spt_exc, spi_exc,range=((0,T/1e3),(0,NE_point)), bins=(T/bw,NE))
 
-            res = {}
+                if NE_detailed != 0:
+                    exc2_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc2.spikes')
+                    spt_exc2 = exc2_data[:,1]; spi_exc2 = exc2_data[:,0]; 
+                    hst_exc2 = np.histogram2d(spt_exc2, spi_exc2, range=((0,T/1e3),(0,NE_detailed-1)), bins=(T/bw,NE))
+                else: 
+                    spt_exc2 = []; spi_exc2 = [];
+                    hst_exc2 = np.histogram2d(spt_exc2, spi_exc2, range=((0,T/1e3),(0,NE_detailed)), bins=(T/bw,NE))
 
-            res['N'] = N; res['NE']=NE; res['NI']=NI
-            res['Ttrans'] = Ttrans; res['Tblank'] = Tblank; res['Tstim'] = Tstim
+                inh_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popInh.spikes')
+                spt_inh = inh_data[:,1]; spi_inh = inh_data[:,0];
+                hst_inh = np.histogram2d(spt_inh, spi_inh, range=((0,T/1e3),(0,NI-1)), bins=(T/bw,NI))
 
-            res['spd_exc'] = np.array([spt_exc, spi_exc])
-            res['spd_exc2'] = np.array([spt_exc2, spi_exc2])
-            res['spd_inh'] = np.array([spt_inh, spi_inh])
+                #
+                tt = hst_inh[1][0:-1] + np.diff(hst_inh[1])[0]/2
 
-            res['tt'] = tt
-            res['re_pop'] = re_pop_point
-            res['re_pop_detailed'] = re_pop_detailed
-            res['ri_pop_pert'] = ri_pop_pert
-            res['ri_pop_npert'] = ri_pop_npert
+                re_pop_point = np.nanmean(hst_exc[0], 1) /(bw/1e3)
+                re_pop_detailed = np.nanmean(hst_exc2[0], 1) /(bw/1e3)
+                ri_pop_pert = np.nanmean(hst_inh[0][:,0:NI_pert], 1) /(bw/1e3)
+                ri_pop_npert = np.nanmean(hst_inh[0][:,NI_pert:], 1) /(bw/1e3)  
 
-            results[fraction_inh_pert] = res
+                res = {}
+
+                res['N'] = N; res['NE']=NE; res['NI']=NI
+                res['Ttrans'] = Ttrans; res['Tblank'] = Tblank; res['Tstim'] = Tstim
+
+                res['spd_exc'] = np.array([spt_exc, spi_exc])
+                res['spd_exc2'] = np.array([spt_exc2, spi_exc2])
+                res['spd_inh'] = np.array([spt_inh, spi_inh])
+
+                res['tt'] = tt
+                res['re_pop'] = re_pop_point
+                res['re_pop_detailed'] = re_pop_detailed
+                res['ri_pop_pert'] = ri_pop_pert
+                res['ri_pop_npert'] = ri_pop_npert
+
+                results[fraction_inh_pert] = res
 
         fl = open(target_dir+'perturbation__'+sim_id+'.res', 'wb'); pickle.dump(results, fl); fl.close()
         
