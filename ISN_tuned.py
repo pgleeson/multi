@@ -606,26 +606,26 @@ if __name__ == '__main__':
 
         percentage_exc_detailed = 100
 
-        r_bkg_ExtExc = 11e3
+        r_bkg_ExtExc = 10e3
         r_bkg_ExtInh = 1
-        r_bkg = 3000.
-        r_stim = -100
+        r_bkg = 4000.
+        r_stim = -400
         
         Be_bkg = 0.5
         Be_stim = Be_bkg
 
-        fraction_inh_pert_rng = [0.9]
-        scale_populations = 2#0
+        fraction_inh_pert_rng = [0.75]
+        scale_populations = 1#0
 
         exc_exc_conn_prob = 1
         exc_inh_conn_prob = 1
         inh_exc_conn_prob = 1
         inh_inh_conn_prob = 1
 
-        Bee = .25
-        Bei = .25
-        Bie = 1
-        Bii = 1
+        Bee = .15
+        Bei = .15
+        Bie = .5
+        Bii = .5
 
         Ttrans = 500.
         Tblank= 1500.
