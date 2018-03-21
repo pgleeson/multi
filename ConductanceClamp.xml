@@ -1,0 +1,56 @@
+<Lems xmlns="http://www.neuroml.org/lems/0.7.4"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.neuroml.org/lems/0.7.4 ../../LEMS/Schemas/LEMS/LEMS_v0.7.4.xsd"
+      description="ConductanceClamp...">
+
+    <!-- One example component...-->
+    
+    <conductanceClamp id="cond0" delay="100ms" duration="400ms" erev="-90mV" conductance="0.2nS"/>
+    
+    
+    <!-- ComponentType definition; will be moved to standard NML2 types eventually ...-->
+    
+    <ComponentType name="conductanceClamp" extends="baseVoltageDepPointCurrent"
+                   description="Conductance 'clamp'. Applies a transient current to a point with _conductance and reversal potential _erev.">
+
+        <Property name="weight" dimension="none" defaultValue="1"/> 
+        
+        <Parameter name="delay" dimension="time" description="Delay before change in conductance. Current is zero prior to this."/>
+        <Parameter name="duration" dimension="time" description="Duration for applying conductance. Conductance is zero after delay + duration."/>
+        
+        <Parameter name="erev" dimension="voltage" description="Reversal potential of the conductance"/>
+        
+        <Parameter name="conductance" dimension="conductance" description="Transient conductance to apply"/>
+
+        <!--TODO: remove! Only required as EventConnection is used in explicitInput to
+        connect inputs to cells. Events aren't passed! ... -->
+        <EventPort name="in" direction="in" description="Note this is not used here. Will be removed in future"/>
+
+        <Dynamics>
+
+            <StateVariable name="i" exposure="i" dimension="current"/>
+
+            <OnEvent port="in"><!--TODO: remove, see above...
+            <StateAssignment variable="i" value="0"/>-->
+            </OnEvent>
+
+            <OnCondition test="t .lt. delay">
+                <StateAssignment variable="i" value="0"/>
+            </OnCondition>
+
+            <OnCondition test="t .geq. delay .and. t .leq. duration + delay">
+                <!-- seriesResistance renamed to simpleSeriesResistance & factor of 1e-5 removed from calculation of current. Still being tested... -->
+                <StateAssignment variable="i" value="weight * conductance * (erev - v)"/>
+            </OnCondition>
+
+            <OnCondition test="t .gt. duration + delay">
+                <StateAssignment variable="i" value="0"/>
+            </OnCondition>
+
+        </Dynamics>
+
+    </ComponentType>
+    
+    
+    
+</Lems>

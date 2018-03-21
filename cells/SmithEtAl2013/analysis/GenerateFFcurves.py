@@ -39,7 +39,8 @@ def generate(cell_id, duration, reference,
              format='hdf5',
              simulator=None,
              num_processors=1,
-             target_group='soma_group'):
+             target_group='soma_group',
+             temperature='35degC'):
 
     #Insyn = int(Ensyn * 0.2)
     #bInsyn = int(bEnsyn * 0.2)
@@ -48,7 +49,7 @@ def generate(cell_id, duration, reference,
     if '/' in cell_id:
         cell_id=cell_id.split('/')[-1]
 
-    nml_doc, network = oc.generate_network(reference, temperature='35degC')
+    nml_doc, network = oc.generate_network(reference, temperature=temperature)
 
     oc.include_neuroml2_cell_and_channels(nml_doc,cell_file,cell_id)
     
@@ -158,7 +159,7 @@ def generate(cell_id, duration, reference,
                                  markers=['o'],
                                  show_plot_already=True)     # Save figure
                                 
-        file_name = '%s_%s.rates'%(cell_id,target_group)     
+        file_name = '%s.%s.%s.rates'%(cell_id,target_group,temperature)     
         f = open(file_name,'w')
         for r in Erates:
             f.write('%s\t%s\n'%(r,rates[r]))
@@ -170,8 +171,8 @@ def generate(cell_id, duration, reference,
 if __name__ == "__main__":
     
     cell_id = 'L23_NoHotSpot'
-    cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
-    cell_id = 'singleCompAllChans'
+    #cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
+    #cell_id = 'singleCompAllChans'
     reference = "L23_FF"
     
     target_group = 'dendrite_group'
