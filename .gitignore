@@ -77,3 +77,12 @@
 /NGBW-JOB-*
 /input.zip
 /x*.xml
+/cells/SmithEtAl2013/analysis/*.net.nml
+/cells/SmithEtAl2013/analysis/L23_FF
+/cells/SmithEtAl2013/analysis/*.mod
+/cells/SmithEtAl2013/analysis/x86_64
+/cells/SmithEtAl2013/analysis/*.dat
+/cells/SmithEtAl2013/analysis/L23_NoHotSpot.hoc
+/cells/SmithEtAl2013/analysis/LEMS_L23_FF.xml
+/cells/SmithEtAl2013/analysis/LEMS_L23_FF_nrn.py
+/cells/SmithEtAl2013/analysis/singleCompAllChans.hoc
