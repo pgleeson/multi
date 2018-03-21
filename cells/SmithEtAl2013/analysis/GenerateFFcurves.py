@@ -171,7 +171,9 @@ def generate(cell_id, duration, reference,
 if __name__ == "__main__":
     
     cell_id = 'L23_NoHotSpot'
-    #cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
+    cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
+    cell_id = '../HH2/HH2_477127614'
+    cell_id = '../HH2/HH2_476686112'
     #cell_id = 'singleCompAllChans'
     reference = "L23_FF"
     
