@@ -118,8 +118,8 @@ if __name__ == "__main__":
     
     cell_id = 'L23_NoHotSpot'
     cell_id = 'singleCompAllChans'
-    #cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
-    cell_id = '../HH2/HH2_477127614'
+    cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
+    #cell_id = '../HH2/HH2_477127614'
     reference = "L23_Noisy"
     duration = 1200
     

@@ -1,7 +1,7 @@
 <Lems>
 
     
-    <noisyCurrentSource id="noisyCurrentSource1" delay="100ms" duration="1000ms" mean="0 nA" stdev="0.05 nA" noiseDt="1.0ms"/>
+    <noisyCurrentSource id="noisyCurrentSource1" delay="100ms" duration="1000ms" mean="0 nA" stdev="0.3 nA" noiseDt="1.0ms"/>
     <noisyCurrentSource id="noisyCurrentSource2" delay="100ms" duration="1000ms" mean="0 nA" stdev="0.01 nA" noiseDt="1.0ms"/>
     <noisyCurrentSource id="noisyCurrentSource3" delay="100ms" duration="1000ms" mean="0 nA" stdev="0.005 nA" noiseDt="1.0ms"/>
 
