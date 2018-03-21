@@ -7,7 +7,7 @@ from pyneuroml import pynml
 
 def generate(cell_id, duration, reference, 
              format='hdf5',
-             num_cells = 10,
+             num_cells = 5,
              simulator=None):
 
     #Insyn = int(Ensyn * 0.2)
@@ -42,11 +42,6 @@ def generate(cell_id, duration, reference,
                            duration="600ms",
                            amplitude="0.4nA")
                            
-    pg1 = oc.add_pulse_generator(nml_doc,
-                           id="pg1",
-                           delay="100ms",
-                           duration="400ms",
-                           amplitude="0.02nA")
     
 
     oc.add_targeted_inputs_to_population(network, 
@@ -56,15 +51,14 @@ def generate(cell_id, duration, reference,
                                          segment_group='soma_group',
                                          number_per_cell = 1,
                                          all_cells=True)
-                                         
+    
     oc.add_targeted_inputs_to_population(network, 
-                                         "PG_variable",
+                                         "PG_noise",
                                          pop, 
-                                         'cond0',             # from ../../../ConductanceClamp.xml
+                                         'noisyCurrentSource1',             # from ../../../NoisyCurrentSource.xml
                                          segment_group='soma_group',
                                          number_per_cell = 1,
-                                         all_cells=True,
-                                         weights = 'random()')
+                                         all_cells=True)
                    
     for i in range(num_cells):
         
@@ -93,7 +87,7 @@ def generate(cell_id, duration, reference,
                                 duration, 
                                 dt = 0.025,
                                 target_dir=target_dir,
-                                include_extra_lems_files=['../../../ConductanceClamp.xml'],
+                                include_extra_lems_files=['../../../NoisyCurrentSource.xml'],
                                 gen_plots_for_all_v = False,
                                 plot_all_segments = False,
                                 gen_plots_for_quantities = to_plot,   #  Dict with displays vs lists of quantity paths
@@ -124,8 +118,9 @@ if __name__ == "__main__":
     
     cell_id = 'L23_NoHotSpot'
     cell_id = 'singleCompAllChans'
-    cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
-    reference = "L23_Variability"
+    #cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
+    cell_id = '../HH2/HH2_477127614'
+    reference = "L23_Noisy"
     duration = 1200
     
     simulator='jNeuroML_NEURON'
@@ -135,6 +130,5 @@ if __name__ == "__main__":
     generate(cell_id, 
              duration=duration, 
              reference=reference, 
-             num_cells = 10,
              format ='xml',
              simulator=simulator)
