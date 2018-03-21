@@ -8,13 +8,14 @@ from pyneuroml import pynml
 def generate(cell_id, duration, reference, 
              format='hdf5',
              num_cells = 10,
-             simulator=None,
-             num_processors=1):
+             simulator=None):
 
     #Insyn = int(Ensyn * 0.2)
     #bInsyn = int(bEnsyn * 0.2)
     
     cell_file = '../%s.cell.nml'%cell_id
+    if '/' in cell_id:
+        cell_id=cell_id.split('/')[-1]
 
     nml_doc, network = oc.generate_network(reference, temperature='35degC')
 
@@ -38,8 +39,8 @@ def generate(cell_id, duration, reference,
     pg0 = oc.add_pulse_generator(nml_doc,
                            id="pg0",
                            delay="200ms",
-                           duration="200ms",
-                           amplitude="0.3nA")
+                           duration="600ms",
+                           amplitude="0.4nA")
                            
     pg1 = oc.add_pulse_generator(nml_doc,
                            id="pg1",
@@ -123,20 +124,17 @@ if __name__ == "__main__":
     
     cell_id = 'L23_NoHotSpot'
     cell_id = 'singleCompAllChans'
+    cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
     reference = "L23_Variability"
-    duration = 600
-    Erates = range(5,1000,25)
-    #Erates = range(5,200,50)
+    duration = 1200
     
     simulator='jNeuroML_NEURON'
     #simulator='jNeuroML_NetPyNE'
     #simulator=None
-    
-    num_processors = min(16,len(Erates))
         
     generate(cell_id, 
              duration=duration, 
              reference=reference, 
+             num_cells = 10,
              format ='xml',
-             simulator=simulator,
-             num_processors=num_processors)
+             simulator=simulator)

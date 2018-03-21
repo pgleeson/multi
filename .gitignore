@@ -93,7 +93,6 @@
 /cells/BBP/LEMS_L23_PC_cADpyr229_1_nrn.py
 /cells/SmithEtAl2013/analysis/*.png
 /cells/SmithEtAl2013/analysis/*.hoc
-/cells/SmithEtAl2013/analysis/*.rates
 /cells/SmithEtAl2013/analysis/L23_Variability
 /cells/SmithEtAl2013/analysis/LEMS_L23_Variability.xml
 /cells/SmithEtAl2013/analysis/*.input.json

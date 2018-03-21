@@ -5,7 +5,7 @@
 
     <!-- One example component...-->
     
-    <conductanceClamp id="cond0" delay="100ms" duration="400ms" erev="-90mV" conductance="0.2nS"/>
+    <conductanceClamp id="cond0" delay="100ms" duration="1000ms" erev="-90mV" conductance="1nS"/>
     
     
     <!-- ComponentType definition; will be moved to standard NML2 types eventually ...-->

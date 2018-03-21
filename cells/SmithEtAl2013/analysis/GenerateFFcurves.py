@@ -159,7 +159,7 @@ def generate(cell_id, duration, reference,
                                  markers=['o'],
                                  show_plot_already=True)     # Save figure
                                 
-        file_name = '%s.%s.%s.rates'%(cell_id,target_group,temperature)     
+        file_name = '%s.%s.%ssyns.%s.rates'%(cell_id,target_group,Ensyn,temperature)     
         f = open(file_name,'w')
         for r in Erates:
             f.write('%s\t%s\n'%(r,rates[r]))
@@ -186,8 +186,8 @@ if __name__ == "__main__":
         duration = 600
         Erates = range(5,1000,100)
     else:
-        duration = 2000
-        Erates = range(5,1000,25)
+        duration = 1000
+        Erates = range(1,100,5)
     
     simulator='jNeuroML_NEURON'
     simulator='jNeuroML_NetPyNE'
@@ -197,7 +197,8 @@ if __name__ == "__main__":
         
     generate(cell_id, 
              duration=duration, 
-             reference=reference, 
+             reference=reference,
+             Ensyn = 100,
              Erates=Erates, 
              format ='xml',
              simulator=simulator,
