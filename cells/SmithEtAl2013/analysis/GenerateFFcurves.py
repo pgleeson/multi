@@ -38,7 +38,8 @@ def generate(cell_id, duration, reference,
              st_duration = 1e9,
              format='hdf5',
              simulator=None,
-             num_processors=1):
+             num_processors=1,
+             target_group='soma_group'):
 
     #Insyn = int(Ensyn * 0.2)
     #bInsyn = int(bEnsyn * 0.2)
@@ -56,8 +57,6 @@ def generate(cell_id, duration, reference,
                              erev="0mV", tau_decay="1ms")
 
 
-
-
     pop = oc.add_population_in_rectangular_region(network,
                                         'L23_pop',
                                         cell_id,
@@ -66,8 +65,6 @@ def generate(cell_id, duration, reference,
                                         100,100,100)
     
           
-    target_group = 'dendrite_group'
-    target_group = 'soma_group'
     
     to_plot = {'Some_voltages':[]}
     to_save = {'%s_voltages.dat'%cell_id:[]}
@@ -161,18 +158,35 @@ def generate(cell_id, duration, reference,
                                  markers=['o'],
                                  show_plot_already=True)     # Save figure
                                 
-                                
+        file_name = '%s_%s.rates'%(cell_id,target_group)     
+        f = open(file_name,'w')
+        for r in Erates:
+            f.write('%s\t%s\n'%(r,rates[r]))
+        f.close()
+        
+        print("Finished! Saved rates data to %s"%file_name)
  
     
 if __name__ == "__main__":
     
     cell_id = 'L23_NoHotSpot'
-    #cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
-    #cell_id = 'singleCompAllChans'
+    cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
+    cell_id = 'singleCompAllChans'
     reference = "L23_FF"
-    duration = 600
-    Erates = range(5,1000,25)
-    Erates = range(5,1000,100)
+    
+    target_group = 'dendrite_group'
+    target_group = 'soma_group'
+    #target_group = 'soma_0'
+    
+    quick = True
+    quick = False
+    
+    if quick:
+        duration = 600
+        Erates = range(5,1000,100)
+    else:
+        duration = 2000
+        Erates = range(5,1000,25)
     
     simulator='jNeuroML_NEURON'
     simulator='jNeuroML_NetPyNE'
@@ -186,4 +200,5 @@ if __name__ == "__main__":
              Erates=Erates, 
              format ='xml',
              simulator=simulator,
-             num_processors=num_processors)
+             num_processors=num_processors,
+             target_group=target_group)

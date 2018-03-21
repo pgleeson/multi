@@ -90,3 +90,7 @@
 /cells/SmithEtAl2013/analysis/LEMS_L23_FF_netpyne.py
 /cells/SmithEtAl2013/analysis/synAmpaEE_stim_105.input.json
 /cells/SmithEtAl2013/analysis/LEMS_L23_FF_netpyne.py_main.json
+/cells/BBP/LEMS_L23_PC_cADpyr229_1_nrn.py
+/cells/SmithEtAl2013/analysis/*.png
+/cells/SmithEtAl2013/analysis/*.hoc
+/cells/SmithEtAl2013/analysis/*.rates
