@@ -1,7 +1,34 @@
 
 
 import opencortex.core as oc
+from pyelectro import analysis
+from pyneuroml import pynml
 
+
+def get_rate_from_trace(times, volts):
+
+    analysis_var={'peak_delta':0,'baseline':0,'dvdt_threshold':0, 'peak_threshold':0}
+
+    try:
+        analysis_data=analysis.IClampAnalysis(volts,
+                                           times,
+                                           analysis_var,
+                                           start_analysis=0,
+                                           end_analysis=times[-1],
+                                           smooth_data=False,
+                                           show_smoothed_data=False,
+                                           verbose=True)
+
+        analysed = analysis_data.analyse()
+
+        import pprint; pp = pprint.PrettyPrinter()
+        #pp.pprint(analysed)
+
+        return analysed['mean_spike_frequency']
+    
+    except Exception as e:
+        print("Problem getting rate: %s"%e)
+        return 0
 
 def generate(cell_id, duration, reference, 
              Bee=1,
@@ -9,12 +36,16 @@ def generate(cell_id, duration, reference,
              Erates = [50,100],
              st_onset = 0,
              st_duration = 1e9,
-             format='hdf5'):
+             format='hdf5',
+             simulator=None,
+             num_processors=1):
 
     #Insyn = int(Ensyn * 0.2)
     #bInsyn = int(bEnsyn * 0.2)
     
     cell_file = '../%s.cell.nml'%cell_id
+    if '/' in cell_id:
+        cell_id=cell_id.split('/')[-1]
 
     nml_doc, network = oc.generate_network(reference, temperature='35degC')
 
@@ -82,7 +113,7 @@ def generate(cell_id, duration, reference,
 
 
 
-    oc.generate_lems_simulation(nml_doc,
+    lems_file_name, lems_sim = oc.generate_lems_simulation(nml_doc,
                                 network, 
                                 nml_file_name, 
                                 duration, 
@@ -95,14 +126,64 @@ def generate(cell_id, duration, reference,
                                 save_all_segments = False,
                                 gen_saves_for_quantities = to_save,   #  Dict with file names vs lists of quantity paths
                                 verbose = True)
+                                
+    if simulator:
+                
+        print ("Running %s for %sms in %s"%(lems_file_name, duration, simulator))
+
+        traces, events = oc.simulate_network(lems_file_name,
+                 simulator,
+                 max_memory='4000M',
+                 nogui=True,
+                 load_saved_data=True,
+                 reload_events=True,
+                 plot=False,
+                 verbose=True,
+                 num_processors=num_processors)
+                 
+        rates = {}
+        tt = [t*1000 for t in traces['t']]
+        for tk in traces.keys():
+            if tk!='t':
+                rate = get_rate_from_trace(tt,[v*1000 for v in traces[tk]])
+                print("Cell %s has rate %s Hz"%(tk,rate))
+                i = int(tk.split('/')[1])
+                rates[Erates[i]]=rate
+
+        print Erates
+        print rates
+
+        ax = pynml.generate_plot([Erates],             
+                                 [ [rates[r] for r in Erates] ],                
+                                 "FF plots",               
+                                 xaxis = 'Input frequency (Hz)',        
+                                 yaxis = 'Firing frequency (Hz)',  
+                                 markers=['o'],
+                                 show_plot_already=True)     # Save figure
+                                
+                                
  
     
 if __name__ == "__main__":
     
     cell_id = 'L23_NoHotSpot'
-    cell_id = 'singleCompAllChans'
+    #cell_id = '../BBP/cADpyr229_L23_PC_5ecbf9b163_0_0'
+    #cell_id = 'singleCompAllChans'
     reference = "L23_FF"
     duration = 600
-    Erates = range(50,500,50)
+    Erates = range(5,1000,25)
+    Erates = range(5,1000,100)
+    
+    simulator='jNeuroML_NEURON'
+    simulator='jNeuroML_NetPyNE'
+    #simulator=None
+    
+    num_processors = min(16,len(Erates))
         
-    generate(cell_id, duration=duration, reference=reference, Erates=Erates, format ='xml')
+    generate(cell_id, 
+             duration=duration, 
+             reference=reference, 
+             Erates=Erates, 
+             format ='xml',
+             simulator=simulator,
+             num_processors=num_processors)
