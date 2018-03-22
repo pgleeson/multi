@@ -6,7 +6,7 @@
     <noisyCurrentSource id="noisyCurrentSource3" delay="100ms" duration="1000ms" mean="0 nA" stdev="0.005 nA" noiseDt="1.0ms"/>
 
 
-    <ComponentType name="noisyCurrentSource" extends="basePointCurrent"
+    <ComponentType name="noisyCurrentSource" extends="baseVoltageDepPointCurrentSpiking"
                    description="NeuroML implementation of PyNN's NoisyCurrentSource: a Gaussian 'white' noise current source. The current amplitude changes at fixed
     intervals, with the new value drawn from a Gaussian distribution.">
 
