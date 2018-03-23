@@ -98,3 +98,5 @@
 /cells/SmithEtAl2013/analysis/*.input.json
 /cells/SmithEtAl2013/analysis/L23_Noisy
 /cells/SmithEtAl2013/analysis/LEMS_L23_Noisy.xml
+/cells/SmithEtAl2013/*.hoc
+/cells/SmithEtAl2013/*.mod
