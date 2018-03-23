@@ -28,6 +28,8 @@ exc2_color = '0 1 0'
 inh_color = '1 0 0'
 inh2_color = '1 0 1'
 
+exc_inh_fraction = .8
+
 def scale_pop_size(baseline, scale):
     return max(min_pop_size, int(baseline*scale))
 
@@ -35,6 +37,9 @@ def generate(scale_populations = 1,
              percentage_exc_detailed=0,
              #exc2_cell = 'SmithEtAl2013/L23_Retuned_477127614',
              exc2_cell = 'SmithEtAl2013/L23_NoHotSpot',
+             #exc2_cell = 'BBP/cADpyr229_L23_PC_5ecbf9b163_0_0',
+             #exc2_cell = 'BBP/cNAC187_L23_NBC_9d37c4b1f8_0_0',
+             #exc2_cell = 'Thalamocortical/L23PyrRS',
              percentage_inh_detailed=0,
              scalex=1,
              scaley=1,
@@ -43,6 +48,8 @@ def generate(scale_populations = 1,
              exc_inh_conn_prob = 0.25,
              inh_exc_conn_prob = 0.75,
              inh_inh_conn_prob = 0.75,
+             ee2_conn_prob = 0,
+             ie2_conn_prob = 0,
              Bee = .1,
              Bei = .1,
              Bie = -.2,
@@ -57,7 +64,9 @@ def generate(scale_populations = 1,
              Ttrans = 500, # transitent time to discard the data (ms)
              Tblank= 1500, # simulation time before perturbation (ms)
              Tstim = 1500, # simulation time of perturbation (ms)
+             Tpost = 500, # simulation time after perturbation (ms)
              connections=True,
+             connections2=False,
              exc_target_dendrites=False,
              inh_target_dendrites=False,
              duration = 1000,
@@ -83,11 +92,11 @@ def generate(scale_populations = 1,
     print('-------------------------------------------------')
                     
 
-    num_exc = scale_pop_size(80,scale_populations)
+    num_exc = scale_pop_size(np.round(100*exc_inh_fraction),scale_populations)
     num_exc2  = int(math.ceil(num_exc*percentage_exc_detailed/100.0))
     num_exc -= num_exc2
     
-    num_inh = scale_pop_size(20,scale_populations)
+    num_inh = scale_pop_size(np.round(100*(1-exc_inh_fraction)),scale_populations)
     num_inh2  = int(math.ceil(num_inh*percentage_inh_detailed/100.0))
     num_inh -= num_inh2
     
@@ -146,7 +155,7 @@ def generate(scale_populations = 1,
                              
     #####   Input types
 
-    tpfsA = oc.add_transient_poisson_firing_synapse(nml_doc,
+    '''tpfsA = oc.add_transient_poisson_firing_synapse(nml_doc,
                                        id="tpsfA",
                                        average_rate="%s Hz"%r_bkg,
                                        delay = '0ms', 
@@ -165,19 +174,38 @@ def generate(scale_populations = 1,
                                        average_rate="%s Hz"%(r_bkg+r_stim),
                                        delay = '%sms'%(Ttrans+Tblank),
                                        duration = '%sms'%(Tstim),
-                                       synapse_id=synAmpaStim.id)
+                                       synapse_id=synAmpaStim.id)'''
 
     tpfsExtExc = oc.add_transient_poisson_firing_synapse(nml_doc,
                                        id="tpfsExtExc",
                                        average_rate="%s Hz"%r_bkg_ExtExc,
                                        delay = '0ms', 
-                                       duration = '%sms'%(Ttrans+Tblank+Tstim),
+                                       duration = '%sms'%(Ttrans+Tblank+Tstim+Tpost),
                                        synapse_id=synAmpaBkg.id)
     tpfsExtInh = oc.add_transient_poisson_firing_synapse(nml_doc,
                                        id="tpfsExtInh",
                                        average_rate="%s Hz"%r_bkg_ExtInh,
                                        delay = '0ms', 
-                                       duration = '%sms'%(Ttrans+Tblank+Tstim),
+                                       duration = '%sms'%(Ttrans+Tblank+Tstim+Tpost),
+                                       synapse_id=synAmpaBkg.id)
+    
+    tpfsPertInh_before = oc.add_transient_poisson_firing_synapse(nml_doc,
+                                       id="tpfsPertInh_before",
+                                       average_rate="%s Hz"%r_bkg_ExtInh,
+                                       delay = '0ms', 
+                                       duration = '%sms'%(Ttrans+Tblank),
+                                       synapse_id=synAmpaBkg.id)
+    tpfsPertInh_during = oc.add_transient_poisson_firing_synapse(nml_doc,
+                                       id="tpfsPertInh_during",
+                                       average_rate="%s Hz"%(r_bkg_ExtInh+r_stim),
+                                       delay = '%sms'%(Ttrans+Tblank), 
+                                       duration = '%sms'%(Tstim),
+                                       synapse_id=synAmpaBkg.id)
+    tpfsPertInh_after = oc.add_transient_poisson_firing_synapse(nml_doc,
+                                       id="tpfsPertInh_after",
+                                       average_rate="%s Hz"%r_bkg_ExtInh,
+                                       delay = '%sms'%(Ttrans+Tblank+Tstim), 
+                                       duration = '%sms'%(Tpost),
                                        synapse_id=synAmpaBkg.id)
 
 
@@ -267,14 +295,92 @@ def generate(scale_populations = 1,
                                       inh_target_dendrites,
                                       weight_expr)
 
-                                        
+    elif connections2:
+        
+        weight_expr = 'abs(normal(1,0.5))'
+        
+        proj = add_projection(network, "projEE",
+                                      popExc, popExc,
+                                      synAmpaEE.id, exc_exc_conn_prob, 
+                                      global_delay,
+                                      exc_target_dendrites,
+                                      weight_expr)
+        proj = add_projection(network, "projEI",
+                                      popExc, popInh,
+                                      synAmpaEI.id, exc_inh_conn_prob, 
+                                      global_delay,
+                                      exc_target_dendrites,
+                                      weight_expr)
+        proj = add_projection(network, "projIE",
+                                      popInh, popExc,
+                                      synGabaIE.id, inh_exc_conn_prob, 
+                                      global_delay,
+                                      inh_target_dendrites,
+                                      weight_expr)
+        proj = add_projection(network, "projII",
+                                      popInh, popInh,
+                                      synGabaII.id, inh_inh_conn_prob, 
+                                      global_delay,
+                                      inh_target_dendrites,
+                                      weight_expr)
+
+        proj = add_projection(network, "projEE2",
+                                      popExc, popExc2,
+                                      synAmpaEE.id, ee2_conn_prob, 
+                                      global_delay,
+                                      exc_target_dendrites,
+                                      weight_expr)   
+        proj = add_projection(network, "projIE2",
+                                      popInh, popExc2,
+                                      synGabaIE.id, ie2_conn_prob, 
+                                      global_delay,
+                                      inh_target_dendrites,
+                                      weight_expr)      
 
     #####   Inputs
 
-    for pop in allExc:
-        oc.add_inputs_to_population(network, "Stim_pre_ExtExc_%s"%pop.id,
-                                    pop, tpfsExtExc.id,
+    oc.add_inputs_to_population(network, "Stim_pre_ExtExc_%s"%popExc.id,
+                                    popExc, tpfsExtExc.id,
                                     all_cells=True)
+
+    num_inh_pert = int(popInh.get_size()*fraction_inh_pert)
+
+    oc.add_inputs_to_population(network, "Stim_I_nonpert_%s"%popInh.id,
+                                    popInh, tpfsExtInh.id,
+                                    all_cells=False,
+                                    only_cells=range(num_inh_pert,popInh.get_size()))
+
+    oc.add_inputs_to_population(network, "Stim_I_pert_before_%s"%popInh.id,
+                                    popInh, tpfsPertInh_before.id,
+                                    all_cells=False,
+                                    only_cells=range(0,num_inh_pert))  
+    oc.add_inputs_to_population(network, "Stim_I_pert_during_%s"%popInh.id,
+                                    popInh, tpfsPertInh_during.id,
+                                    all_cells=False,
+                                    only_cells=range(0,num_inh_pert))
+    oc.add_inputs_to_population(network, "Stim_I_pert_after_%s"%popInh.id,
+                                    popInh, tpfsPertInh_after.id,
+                                    all_cells=False,
+                                    only_cells=range(0,num_inh_pert))
+
+    # injecting noise in the soma of detailed neurons to insert some variability
+    '''oc.add_targeted_inputs_to_population(network, 
+                                         "PG_noise",
+                                         popExc2, 
+                                         'noisyCurrentSource1',             # from ../../../NoisyCurrentSource.xml
+                                         segment_group='soma_group',
+                                         number_per_cell = 1,
+                                         all_cells=True)
+    
+    
+    oc.add_inputs_to_population(network, "Stim_pre_ExtExc_%s"%popExc.id,
+                                    popExc, tpfsExtExc.id,
+                                    all_cells=True)
+
+    for pop in allExc:
+        #oc.add_inputs_to_population(network, "Stim_pre_ExtExc_%s"%pop.id,
+        #                            pop, tpfsExtExc.id,
+        #                            all_cells=True)
 
         oc.add_inputs_to_population(network, "Stim_pre_%s"%pop.id,
                                     pop, tpfsA.id,
@@ -303,7 +409,7 @@ def generate(scale_populations = 1,
         oc.add_inputs_to_population(network, "Stim_I_nonpert_%s"%pop.id,
                                     pop, tpfsB.id,
                                     all_cells=False,
-                                    only_cells=range(num_inh_pert,pop.get_size()))  
+                                    only_cells=range(num_inh_pert,pop.get_size()))  '''
     
 
     save_v = {}
@@ -400,6 +506,7 @@ def generate(scale_populations = 1,
                             gen_saves_for_quantities = save_v,
                             gen_spike_saves_for_all_somas = gen_spike_saves_for_all_somas,
                             target_dir=target_dir,
+                            include_extra_lems_files = ['./NoisyCurrentSource.xml'],
                             report_file_name='report.txt')
 
 
@@ -553,6 +660,7 @@ if __name__ == '__main__':
     Ttrans = 500.
     Tblank= 1500. 
     Tstim = 1500.  
+    Tpost = 500.
     Bee = .5
     Bei = .5 
     Bie = 1.
@@ -560,10 +668,15 @@ if __name__ == '__main__':
     Be_stim = Be_bkg = 0.5
     r_bkg_ExtExc=1
     r_bkg_ExtInh=1
+    r_bkg = 1
     dt = 0.025
     percentage_exc_detailed = 0
 
     fraction_inh_pert_rng = [0.5]
+    ee2_conn_prob = 0
+    ie2_conn_prob = 0
+    #exc_clamp = 1
+    duration_clamp = 500
 
     if '-test' in sys.argv:  
         simtag = 'test'
@@ -578,10 +691,12 @@ if __name__ == '__main__':
         exc_inh_conn_prob = 0.25
         inh_exc_conn_prob = 0.75
         inh_inh_conn_prob = 0.75
-
-        scale_populations = 5#0
         
-        percentage_exc_detailed = 2.5
+        ee2_conn_prob = 4
+
+        scale_populations = .1#0
+        
+        percentage_exc_detailed = 0#2.5
 
         Bee = .5e-5
         Bei = .5e-5
@@ -594,73 +709,94 @@ if __name__ == '__main__':
         exc_clamp= {'popExc2':[0]}
         exc_clamp= None
         exc_target_dendrites =True
+        inh_target_dendrites = 1
         
         Ttrans = 100.
         Tblank= 100.
         Tstim = 100.
+        Tpost = 100.
+        
+        connections = 1
+        # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
+        connections2 = 0
     
     elif '-AllenCells' in sys.argv:
         simtag = 'AllenCells'
 
-        r_bkg_ExtExc = 300
-        r_bkg_ExtInh = 1
-        r_bkg = 3000.
+        r_bkg_ExtExc = 3e3+300
+        r_bkg_ExtInh = 3e3
         r_stim = -100
         
         Be_bkg = 0.5
         Be_stim = Be_bkg
 
-        fraction_inh_pert_rng = [0.1, 0.5, 0.9]
-        scale_populations = 10 #x100 total N
+        fraction_inh_pert_rng = [0.95]
+        scale_populations = 5 #x100 total N
 
-        exc_exc_conn_prob = 0.25
-        exc_inh_conn_prob = 0.25
-        inh_exc_conn_prob = 1
-        inh_inh_conn_prob = 1
+        connections = 1
+        # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
+        connections2 = 0
 
-        Bee = .25
-        Bei = .25 
-        Bie = .5
-        Bii = .5
+        exc_exc_conn_prob = 0.15
+        exc_inh_conn_prob = 0.15
+        inh_exc_conn_prob = .5
+        inh_inh_conn_prob = .5
+
+        Bee = .25*2
+        Bei = .25*2
+        Bie = .5*2
+        Bii = .5/1.5
 
         Ttrans = 500.
-        Tblank= 5000. 
-        Tstim = 5000.
+        Tblank = 500. 
+        Tstim = 500.
+        Tpost = 500.
     
     elif '-Detailed_Soma' in sys.argv:
         simtag = 'Detailed_Soma'
+        
+        exc_clamp= {'popExc2':[0]}
+        exc_clamp = None
 
-        percentage_exc_detailed = 100
+        percentage_exc_detailed = .5
+        exc_target_dendrites = 1
+        inh_target_dendrites = 1
 
-        r_bkg_ExtExc = 10e3
-        r_bkg_ExtInh = 1
-        r_bkg = 4000.
-        r_stim = -400
+        r_bkg_ExtExc = 3e3+300
+        r_bkg_ExtInh = 3e3
+        r_stim = -100
         
         Be_bkg = 0.5
         Be_stim = Be_bkg
 
-        fraction_inh_pert_rng = [0.75]
-        scale_populations = 1#0
+        fraction_inh_pert_rng = [0.95]
+        scale_populations = 5
 
-        exc_exc_conn_prob = 1
-        exc_inh_conn_prob = 1
-        inh_exc_conn_prob = 1
-        inh_inh_conn_prob = 1
+        connections = 0
+        # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
+        connections2 = 1
 
-        Bee = .15
-        Bei = .15
-        Bie = .5
-        Bii = .5
+        exc_exc_conn_prob = 0.15
+        exc_inh_conn_prob = 0.15
+        inh_exc_conn_prob = 0.5
+        inh_inh_conn_prob = 0.5
+
+        Bee = .25*2
+        Bei = .25*2
+        Bie = .5*2
+        Bii = .5/1.5
+
+        ee2_conn_prob = 4
+        ie2_conn_prob = 1
 
         Ttrans = 500.
-        Tblank= 1500.
-        Tstim = 1500.
+        Tblank= 500.
+        Tstim = 500.
+        Tpost = 500.
 
-    
     N = scale_populations*100
-    NE = int(.8*N); NI=N-NE
-    NE_detailed = int(percentage_exc_detailed/100*NE)
+    NE = int(exc_inh_fraction*N); NI=N-NE
+    NE_detailed = int(percentage_exc_detailed*NE/100)
     NE_point = NE-NE_detailed
 
     sim_id = simtag+'_N'+str(int(N))
@@ -668,7 +804,7 @@ if __name__ == '__main__':
     # --
     if '-rheobase' in sys.argv:
         #rins = np.array([2.5,3,3.5])*1e3
-        rins = np.array([12,15])*1e3    
+        rins = np.array([0,1,2,3])*300    
 
         results = {}
         results['r_in'] = rins
@@ -684,8 +820,8 @@ if __name__ == '__main__':
                                                     Be_stim = Be_stim,
                                                     r_bkg = 1,
                                                     r_stim = 1,
-                                                    r_bkg_ExtExc=rin,
-                                                    r_bkg_ExtInh=rin,
+                                                    r_bkg_ExtExc=rin+14e3,
+                                                    r_bkg_ExtInh=rin+5e3,
                                                     Ttrans = Ttrans,
                                                     Tblank= Tblank,
                                                     Tstim = Tstim,
@@ -704,31 +840,100 @@ if __name__ == '__main__':
                                                     run_in_simulator=run_in_simulator,
                                                     num_processors=num_processors)
 
+            #
+            T = Ttrans+Tblank+Tstim
 
-            if run_in_simulator:
-                
-                T = Ttrans+Tblank+Tstim
+            if NE_point != 0:
+                exc_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc.spikes')
+                spt_exc = exc_data[:,1]; spi_exc = exc_data[:,0];
+                exc_rate = len(spt_exc[spt_exc>(Ttrans/1e3)]) /((Tblank+Tstim)/1e3) /NE_point 
+            else: spt_exc = []; spi_exc = []; exc_rate = []
+             
+            if NE_detailed != 0:
+                exc2_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc2.spikes')
+                spt_exc2 = exc2_data[:,1]; spi_exc2 = exc2_data[:,0]; 
+                exc2_rate = len(spt_exc2[spt_exc2>(Ttrans/1e3)]) /((Tblank+Tstim)/1e3) /NE_detailed
+            else: spt_exc2 = []; spi_exc2 = []; exc2_rate = []  
 
-                if NE_point != 0:
-                    exc_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc.spikes')
-                    spt_exc = exc_data[:,1]; spi_exc = exc_data[:,0];
-                    exc_rate = len(spt_exc) /(T/1e3) /NE_point 
-                else: spt_exc = []; spi_exc = []; exc_rate = []
+            inh_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popInh.spikes')
+            spt_inh = inh_data[:,1]; spi_inh = inh_data[:,0];
+            inh_rate = len(spt_inh[spt_inh>(Ttrans/1e3)]) /((Tblank+Tstim)/1e3) /NI
 
-                if NE_detailed != 0:
-                    exc2_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc2.spikes')
-                    spt_exc2 = exc2_data[:,1]; spi_exc2 = exc2_data[:,0]; 
-                    exc2_rate = len(spt_exc2) /(T/1e3) /NE_detailed
-                    
-                else: spt_exc2 = []; spi_exc2 = []; exc2_rate = []  
+            r_out_exc.append(exc_rate)
+            r_out_exc2.append(exc2_rate)
+            r_out_inh.append(inh_rate)
+        
+        results['r_out_exc'] = np.array(r_out_exc)
+        results['r_out_exc2'] = np.array(r_out_exc2)
+        results['r_out_inh'] = np.array(r_out_inh)
 
-                inh_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popInh.spikes')
-                spt_inh = inh_data[:,1]; spi_inh = inh_data[:,0];
-                inh_rate = len(spt_inh) /(T/1e3) /NI
+        fl = open(target_dir+'rheobase__'+sim_id+'.res', 'wb'); pickle.dump(results, fl); fl.close()
+    
+    elif '-gains' in sys.argv:
+        #rins = np.array([2.5,3,3.5])*1e3
+        rins_exc = np.array([0,1,2,3])*300 +14e3
+        rins_inh = np.array([0,1,2,3])*300 +5e3
 
-                r_out_exc.append(exc_rate)
-                r_out_exc2.append(exc2_rate)
-                r_out_inh.append(inh_rate)
+        results = {}
+        results['r_in'] = rins_exc
+        results['r_in_inh'] = rins_inh
+
+        r_out_exc, r_out_exc2, r_out_inh = [], [], []
+        for ii, rin_exc in enumerate(rins_exc):
+            rin_inh = rins_inh[ii]
+
+            suffix = '';#str(int(fraction_inh_pert*100))
+            target_dir = './temp/';
+            [exc_rate, inh_rate, traces] = generate(Bee = 1e-5,
+                                                    Bei = 1e-5,
+                                                    Bie = 1e-5,
+                                                    Bii = 1e-5,
+                                                    Be_bkg = Be_bkg,
+                                                    Be_stim = Be_stim,
+                                                    r_bkg = 1,
+                                                    r_stim = 1,
+                                                    r_bkg_ExtExc=rin_exc,
+                                                    r_bkg_ExtInh=rin_inh,
+                                                    Ttrans = Ttrans,
+                                                    Tblank= Tblank,
+                                                    Tstim = Tstim,
+                                                    exc_exc_conn_prob = 0,
+                                                    exc_inh_conn_prob = 0,
+                                                    inh_exc_conn_prob = 0,
+                                                    inh_inh_conn_prob = 0,
+                                                    fraction_inh_pert=0,
+                                                    duration = Ttrans+Tblank+Tstim,
+                                                    dt = dt,
+                                                    scale_populations=scale_populations,
+                                                    format=format,
+                                                    percentage_exc_detailed=percentage_exc_detailed,
+                                                    target_dir=target_dir,
+                                                    suffix=suffix,
+                                                    run_in_simulator=run_in_simulator,
+                                                    num_processors=num_processors)
+
+            #
+            T = Ttrans+Tblank+Tstim
+
+            if NE_point != 0:
+                exc_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc.spikes')
+                spt_exc = exc_data[:,1]; spi_exc = exc_data[:,0];
+                exc_rate = len(spt_exc[spt_exc>(Ttrans/1e3)]) /((Tblank+Tstim)/1e3) /NE_point 
+            else: spt_exc = []; spi_exc = []; exc_rate = []
+             
+            if NE_detailed != 0:
+                exc2_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc2.spikes')
+                spt_exc2 = exc2_data[:,1]; spi_exc2 = exc2_data[:,0]; 
+                exc2_rate = len(spt_exc2[spt_exc2>(Ttrans/1e3)]) /((Tblank+Tstim)/1e3) /NE_detailed
+            else: spt_exc2 = []; spi_exc2 = []; exc2_rate = []  
+
+            inh_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popInh.spikes')
+            spt_inh = inh_data[:,1]; spi_inh = inh_data[:,0];
+            inh_rate = len(spt_inh[spt_inh>(Ttrans/1e3)]) /((Tblank+Tstim)/1e3) /NI
+
+            r_out_exc.append(exc_rate)
+            r_out_exc2.append(exc2_rate)
+            r_out_inh.append(inh_rate)
         
         results['r_out_exc'] = np.array(r_out_exc)
         results['r_out_exc2'] = np.array(r_out_exc2)
@@ -747,20 +952,23 @@ if __name__ == '__main__':
                     Bii = Bii,
                     Be_bkg = Be_bkg,
                     Be_stim = Be_stim,
-                    r_bkg = r_bkg,
+                    r_bkg = 0,
                     r_stim = r_stim,
                     r_bkg_ExtExc=r_bkg_ExtExc,
                     r_bkg_ExtInh=r_bkg_ExtInh,
                     Ttrans = Ttrans,
                     Tblank= Tblank,
                     Tstim = Tstim,
+                    Tpost = Tpost,
                     exc_exc_conn_prob = exc_exc_conn_prob,
                     exc_inh_conn_prob = exc_inh_conn_prob,
                     inh_exc_conn_prob = inh_exc_conn_prob,
                     inh_inh_conn_prob = inh_inh_conn_prob,
+                    ee2_conn_prob = ee2_conn_prob,
+                    ie2_conn_prob = ie2_conn_prob,
+                    connections=connections, connections2=connections2,
                     fraction_inh_pert=fraction_inh_pert,
-                    exc_target_dendrites=exc_target_dendrites,
-                    duration = Ttrans+Tblank+Tstim,
+                    duration = Ttrans+Tblank+Tstim+Tpost,
                     dt = dt,
                     scale_populations=scale_populations,
                     format=format,
@@ -769,32 +977,34 @@ if __name__ == '__main__':
                     suffix=suffix,
                     run_in_simulator=run_in_simulator,
                     num_processors=num_processors,
+                    exc_target_dendrites=exc_target_dendrites,
+                    inh_target_dendrites=inh_target_dendrites,
                     exc_clamp=exc_clamp)
 
             # --
             NI_pert = int(fraction_inh_pert*NI)
             NI_npert = NI-NI_pert
 
-            T = Ttrans+Tblank+Tstim
+            T = Ttrans+Tblank+Tstim+Tpost
             bw = 100; 
-            
+
             if run_in_simulator:
 
                 if NE_point != 0:
                     exc_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc.spikes')
                     spt_exc = exc_data[:,1]; spi_exc = exc_data[:,0];
-                    hst_exc = np.histogram2d(spt_exc, spi_exc, range=((0,T/1e3),(0,NE_point-1)), bins=(T/bw,NE))
+                    hst_exc = np.histogram2d(spt_exc, spi_exc, range=((0,T/1e3),(0,NE_point-1)), bins=(T/bw,NE_point))
                 else: 
                     spt_exc = []; spi_exc = [];
-                    hst_exc = np.histogram2d(spt_exc, spi_exc,range=((0,T/1e3),(0,NE_point)), bins=(T/bw,NE))
+                    hst_exc = np.histogram2d(spt_exc, spi_exc,range=((0,T/1e3),(0,NE_point)), bins=(T/bw,NE_point+1))
 
                 if NE_detailed != 0:
                     exc2_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popExc2.spikes')
                     spt_exc2 = exc2_data[:,1]; spi_exc2 = exc2_data[:,0]; 
-                    hst_exc2 = np.histogram2d(spt_exc2, spi_exc2, range=((0,T/1e3),(0,NE_detailed-1)), bins=(T/bw,NE))
+                    hst_exc2 = np.histogram2d(spt_exc2, spi_exc2, range=((0,T/1e3),(0,NE_detailed-1)), bins=(T/bw,NE_detailed))
                 else: 
                     spt_exc2 = []; spi_exc2 = [];
-                    hst_exc2 = np.histogram2d(spt_exc2, spi_exc2, range=((0,T/1e3),(0,NE_detailed)), bins=(T/bw,NE))
+                    hst_exc2 = np.histogram2d(spt_exc2, spi_exc2, range=((0,T/1e3),(0,NE_detailed)), bins=(T/bw,NE_detailed+1))
 
                 inh_data = pl.loadtxt(target_dir+'Sim_ISN_net'+suffix+'.popInh.spikes')
                 spt_inh = inh_data[:,1]; spi_inh = inh_data[:,0];
@@ -811,7 +1021,8 @@ if __name__ == '__main__':
                 res = {}
 
                 res['N'] = N; res['NE']=NE; res['NI']=NI
-                res['Ttrans'] = Ttrans; res['Tblank'] = Tblank; res['Tstim'] = Tstim
+                res['Ttrans'] = Ttrans; res['Tblank'] = Tblank; 
+                res['Tstim'] = Tstim; res['Tpost'] = Tpost
 
                 res['spd_exc'] = np.array([spt_exc, spi_exc])
                 res['spd_exc2'] = np.array([spt_exc2, spi_exc2])
@@ -825,5 +1036,5 @@ if __name__ == '__main__':
 
                 results[fraction_inh_pert] = res
 
-        fl = open(target_dir+'perturbation__'+sim_id+'.res', 'wb'); pickle.dump(results, fl); fl.close()
+            fl = open(target_dir+'perturbation__'+sim_id+'.res', 'wb'); pickle.dump(results, fl); fl.close()
         
