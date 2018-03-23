@@ -120,7 +120,7 @@ def generate(scale_populations = 1,
     
 
     xDim = 700*scalex
-    yDim = 200*scaley
+    yDim = 100*scaley
     zDim = 700*scalez
 
     xs = -1*xDim/2
@@ -306,28 +306,39 @@ def generate(scale_populations = 1,
                                     only_cells=range(num_inh_pert,pop.get_size()))  
     
 
+    save_v = {}
+    plot_v = {}
 
     # Work in progress...
     # General idea: clamp one (or more) exc cell at rev pot of inh syn and see only exc inputs
     #
     if exc_clamp:
         
-        vc = oc.add_voltage_clamp_triple(nml_doc, id="exc_clamp", 
+        clamp_id = "vClamp"
+        vc = oc.add_voltage_clamp_triple(nml_doc, id=clamp_id, 
                              delay='0ms', 
                              duration='%sms'%duration, 
-                             conditioning_voltage=synGaba1.erev,
-                             testing_voltage=synGaba1.erev,
-                             return_voltage=synGaba1.erev, 
+                             conditioning_voltage=synGabaIE.erev,
+                             testing_voltage=synAmpaEE.erev,
+                             return_voltage=synAmpaEE.erev, 
                              simple_series_resistance="1e5ohm",
                              active = "1")
                              
+        save_v['v_clamps_i.dat'] = []
+        plot_v['IClamp_i'] = []
+        
         for pop in exc_clamp:
+            
             oc.add_inputs_to_population(network, "exc_clamp_%s"%pop,
                                         network.get_by_id(pop), vc.id,
                                         all_cells=False,
                                         only_cells=exc_clamp[pop])
+            for i in exc_clamp[pop]:
                 
-
+                q = '%s/%s/%s/%s/i'%(pop, i,network.get_by_id(pop).component,clamp_id)
+                save_v['v_clamps_i.dat'].append(q)
+                plot_v['IClamp_i'].append(q)
+                                        
 
     #####   Save NeuroML and LEMS Simulation files      
     
@@ -339,9 +350,6 @@ def generate(scale_populations = 1,
                     target_dir=target_dir)
         
     print("Saved to: %s"%nml_file_name)
-
-    save_v = {}
-    plot_v = {}
 
     if num_exc>0:
         exc_traces = '%s_%s_v.dat'%(network.id,popExc.id)
@@ -571,12 +579,25 @@ if __name__ == '__main__':
         inh_exc_conn_prob = 0.75
         inh_inh_conn_prob = 0.75
 
-        scale_populations = .1#0
+        scale_populations = 5#0
+        
+        percentage_exc_detailed = 2.5
 
         Bee = .5e-5
         Bei = .5e-5
         Bie = 1e-5
         Bii = 1e-5
+        
+        format='xml'
+        
+        exc_clamp= {'popExc':[0]}
+        exc_clamp= {'popExc2':[0]}
+        exc_clamp= None
+        exc_target_dendrites =True
+        
+        Ttrans = 100.
+        Tblank= 100.
+        Tstim = 100.
     
     elif '-AllenCells' in sys.argv:
         simtag = 'AllenCells'
@@ -738,6 +759,7 @@ if __name__ == '__main__':
                     inh_exc_conn_prob = inh_exc_conn_prob,
                     inh_inh_conn_prob = inh_inh_conn_prob,
                     fraction_inh_pert=fraction_inh_pert,
+                    exc_target_dendrites=exc_target_dendrites,
                     duration = Ttrans+Tblank+Tstim,
                     dt = dt,
                     scale_populations=scale_populations,
@@ -746,7 +768,8 @@ if __name__ == '__main__':
                     target_dir=target_dir,
                     suffix=suffix,
                     run_in_simulator=run_in_simulator,
-                    num_processors=num_processors)
+                    num_processors=num_processors,
+                    exc_clamp=exc_clamp)
 
             # --
             NI_pert = int(fraction_inh_pert*NI)
