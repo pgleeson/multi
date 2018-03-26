@@ -671,12 +671,13 @@ if __name__ == '__main__':
     r_bkg = 1
     dt = 0.025
     percentage_exc_detailed = 0
-
+    exc_target_dendrites = 0
+    inh_target_dendrites = 0
     fraction_inh_pert_rng = [0.5]
     ee2_conn_prob = 0
     ie2_conn_prob = 0
-    #exc_clamp = 1
-    duration_clamp = 500
+    exc_clamp = None
+    #duration_clamp = 500
 
     if '-test' in sys.argv:  
         simtag = 'test'
@@ -762,6 +763,8 @@ if __name__ == '__main__':
         exc_target_dendrites = 1
         inh_target_dendrites = 1
 
+        exc_clamp= {'popExc2':[0]}
+        
         r_bkg_ExtExc = 3e3+300
         r_bkg_ExtInh = 3e3
         r_stim = -100
