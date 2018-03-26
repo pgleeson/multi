@@ -435,12 +435,25 @@ def generate(scale_populations = 1,
         
         for pop in exc_clamp:
             
-            oc.add_inputs_to_population(network, "exc_clamp_%s"%pop,
+            seg_id = 0
+            
+            oc.add_inputs_to_population(network, "exc_clamp_seg%s_%s"%(seg_id,pop),
                                         network.get_by_id(pop), vc.id,
                                         all_cells=False,
-                                        only_cells=exc_clamp[pop])
+                                        only_cells=exc_clamp[pop],
+                                        segment_ids=[seg_id])
+                           
+            seg_id = 2953 # end of axon        
+            
+            oc.add_inputs_to_population(network, "exc_clamp_seg%s_%s"%(seg_id,pop),
+                                        network.get_by_id(pop), vc.id,
+                                        all_cells=False,
+                                        only_cells=exc_clamp[pop],
+                                        segment_ids=[seg_id])     
+            
             for i in exc_clamp[pop]:
                 
+                # record at soma
                 q = '%s/%s/%s/%s/i'%(pop, i,network.get_by_id(pop).component,clamp_id)
                 save_v['v_clamps_i.dat'].append(q)
                 plot_v['IClamp_i'].append(q)
@@ -678,7 +691,7 @@ if __name__ == '__main__':
     ie2_conn_prob = 0
     exc_clamp = None
     #duration_clamp = 500
-
+    
     if '-test' in sys.argv:  
         simtag = 'test'
         
@@ -758,7 +771,7 @@ if __name__ == '__main__':
         
         exc_clamp= {'popExc2':[0]}
         exc_clamp = None
-
+        
         percentage_exc_detailed = .5
         exc_target_dendrites = 1
         inh_target_dendrites = 1
