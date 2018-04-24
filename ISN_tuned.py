@@ -683,19 +683,32 @@ if __name__ == '__main__':
     
     # ---
     # default values
-    Ttrans = 500.
-    Tblank= 1500. 
-    Tstim = 1500.  
-    Tpost = 500.
+    exc_exc_conn_prob = 0.15
+    exc_inh_conn_prob = 0.15
+    inh_exc_conn_prob = .5
+    inh_inh_conn_prob = .5
+    
     Bee = .5
-    Bei = .5 
-    Bie = 1.
-    Bii = 1.
+    Bei = .5
+    Bie = 1
+    Bii = 1
+
     Be_stim = Be_bkg = 0.5
+
+    Ttrans = 500.
+    Tblank = 500. 
+    Tstim = 500.
+    Tpost = 500.
+    
     r_bkg_ExtExc=1
     r_bkg_ExtInh=1
     r_bkg = 1
     dt = 0.025
+    
+    r_bkg_ExtExc = 3e3+300
+    r_bkg_ExtInh = 3e3
+    r_stim = -100
+
     percentage_exc_detailed = 0
     exc_target_dendrites = 0
     inh_target_dendrites = 0
@@ -704,7 +717,7 @@ if __name__ == '__main__':
     ie2_conn_prob = 0
     v_clamp = False
     #duration_clamp = 500
-    
+
     if '-test' in sys.argv:  
         simtag = 'test'
         
@@ -748,47 +761,18 @@ if __name__ == '__main__':
     elif '-AllenCells' in sys.argv:
         simtag = 'AllenCells'
 
-        r_bkg_ExtExc = 3e3+300
-        r_bkg_ExtInh = 3e3
-        r_stim = -100
-        
-        Be_bkg = 0.5
-        Be_stim = Be_bkg
-
-        fraction_inh_pert_rng = [0.95]
-        scale_populations = 5 #x100 total N
+        fraction_inh_pert_rng = [0.9]
+        scale_populations = 10 #x100 total N
 
         connections = 1
         # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
         connections2 = 0
 
-        exc_exc_conn_prob = 0.15
-        exc_inh_conn_prob = 0.15
-        inh_exc_conn_prob = .5
-        inh_inh_conn_prob = .5
-
-        Bee = .25*2
-        Bei = .25*2
-        Bie = .5*2
-        Bii = .5/1.5
-
-        Ttrans = 500.
-        Tblank = 500. 
-        Tstim = 500.
-        Tpost = 500.
-    
     elif '-Detailed_Soma' in sys.argv:
         simtag = 'Detailed_Soma'
         
         v_clamp = False
         v_clamp = True
-        
-        r_bkg_ExtExc = 3e3+300
-        r_bkg_ExtInh = 3e3
-        r_stim = -100
-        
-        Be_bkg = 0.5
-        Be_stim = Be_bkg
 
         fraction_inh_pert_rng = [0.9]
         
@@ -802,23 +786,8 @@ if __name__ == '__main__':
         # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
         connections2 = 1
 
-        exc_exc_conn_prob = 0.15
-        exc_inh_conn_prob = 0.15
-        inh_exc_conn_prob = 0.5
-        inh_inh_conn_prob = 0.5
-
-        Bee = .25*2
-        Bei = .25*2
-        Bie = .5*2
-        Bii = .5/1.5
-
         ee2_conn_prob = 4
         ie2_conn_prob = 1
-
-        Ttrans = 500.
-        Tblank= 500.
-        Tstim = 500.
-        Tpost = 500.
 
     N = scale_populations*100
     NE = int(exc_inh_fraction*N); NI=N-NE
