@@ -790,11 +790,11 @@ if __name__ == '__main__':
         Be_bkg = 0.5
         Be_stim = Be_bkg
 
-        fraction_inh_pert_rng = [0.75]
+        fraction_inh_pert_rng = [0.9]
         
-        scale_populations = 5
+        scale_populations = 10
         
-        percentage_exc_detailed = 2.5 #1.25
+        percentage_exc_detailed = 1.25
         exc_target_dendrites = 1
         inh_target_dendrites = 1
 
