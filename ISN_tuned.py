@@ -78,17 +78,19 @@ def generate(scale_populations = 1,
              run_in_simulator = None,
              num_processors = 1,
              target_dir='./temp/',
-             exc_clamp=None):       # exc_clamp is work in progress...
+             v_clamp=False):       
                  
     reference = ("ISN_net%s"%(suffix)).replace('.','_')
     
+    info=('  Generating ISN network: %s\n'%reference)
+    info+=('    Duration: %s; dt: %s; scale: %s; simulator: %s (num proc. %s)\n'%(duration, dt, scale_populations, run_in_simulator, num_processors))
+    info+=('    Bee: %s; Bei: %s; Bie: %s; Bii: %s\n'%(Bee,Bei,Bie,Bii))
+    info+=('    Be_bkg: %s at %sHz\n'%(Be_bkg,r_bkg))
+    info+=('    Be_stim: %s at %sHz (i.e. %sHz for %s perturbed I cells)\n'%(Be_stim,r_stim, r_bkg+r_stim, fraction_inh_pert))
+    info+=('    Exc detailed: %s%% - Inh detailed %s%%'%(percentage_exc_detailed,percentage_inh_detailed))
+    
     print('-------------------------------------------------')
-    print('  Generating ISN network: %s'%reference)
-    print('    Duration: %s; dt: %s; scale: %s; simulator: %s (num proc. %s)'%(duration, dt, scale_populations, run_in_simulator, num_processors))
-    print('    Bee: %s; Bei: %s; Bie: %s; Bii: %s'%(Bee,Bei,Bie,Bii))
-    print('    Be_bkg: %s at %sHz'%(Be_bkg,r_bkg))
-    print('    Be_stim: %s at %sHz (i.e. %sHz for %s perturbed I cells)'%(Be_stim,r_stim, r_bkg+r_stim, fraction_inh_pert))
-    print('    Exc detailed: %s%% - Inh detailed %s%%'%(percentage_exc_detailed,percentage_inh_detailed))
+    print(info)
     print('-------------------------------------------------')
                     
 
@@ -101,6 +103,8 @@ def generate(scale_populations = 1,
     num_inh -= num_inh2
     
     nml_doc, network = oc.generate_network(reference, network_seed=1234)
+    nml_doc.notes=info
+    network.notes=info
     
     #exc_cell_id = 'AllenHH_480351780'
     #exc_cell_id = 'AllenHH_477127614'
@@ -217,7 +221,9 @@ def generate(scale_populations = 1,
                                                   num_exc,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color=exc_color)                 
+                                                  color=exc_color)  
+    from neuroml import Property
+    popExc.properties.append(Property('type','E'))
     allExc = [popExc]
 
     if num_exc2>0:
@@ -228,6 +234,7 @@ def generate(scale_populations = 1,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
                                                   color=exc2_color)
+        popExc2.properties.append(Property('type','E'))
                                                   
         allExc.append(popExc2)
 
@@ -237,7 +244,8 @@ def generate(scale_populations = 1,
                                                   num_inh,
                                                   xs,ys,zs,
                                                   xDim,yDim,zDim,
-                                                  color=inh_color)           
+                                                  color=inh_color)     
+    popInh.properties.append(Property('type','I'))     
     allInh = [popInh]
     
     if num_inh2>0:
@@ -418,45 +426,50 @@ def generate(scale_populations = 1,
     # Work in progress...
     # General idea: clamp one (or more) exc cell at rev pot of inh syn and see only exc inputs
     #
-    if exc_clamp:
+    if v_clamp:
         
-        clamp_id = "vClamp"
-        vc = oc.add_voltage_clamp_triple(nml_doc, id=clamp_id, 
-                             delay='0ms', 
-                             duration='%sms'%duration, 
-                             conditioning_voltage=synGabaIE.erev,
-                             testing_voltage=synAmpaEE.erev,
-                             return_voltage=synAmpaEE.erev, 
-                             simple_series_resistance="1e5ohm",
-                             active = "1")
-                             
-        save_v['v_clamps_i.dat'] = []
-        plot_v['IClamp_i'] = []
+        levels = {'IPSC': synAmpaEE.erev, 'EPSP':synGabaIE.erev}
         
-        for pop in exc_clamp:
-            
-            seg_id = 0
-            
-            oc.add_inputs_to_population(network, "exc_clamp_seg%s_%s"%(seg_id,pop),
-                                        network.get_by_id(pop), vc.id,
-                                        all_cells=False,
-                                        only_cells=exc_clamp[pop],
-                                        segment_ids=[seg_id])
-                           
-            seg_id = 2953 # end of axon        
-            
-            oc.add_inputs_to_population(network, "exc_clamp_seg%s_%s"%(seg_id,pop),
-                                        network.get_by_id(pop), vc.id,
-                                        all_cells=False,
-                                        only_cells=exc_clamp[pop],
-                                        segment_ids=[seg_id])     
-            
-            for i in exc_clamp[pop]:
-                
+        for l in levels:
+            cell_index = levels.keys().index(l)
+            clamp_id = "vClamp_%s"%l
+            v_clamped = levels[l]
+
+            vc = oc.add_voltage_clamp_triple(nml_doc, id=clamp_id, 
+                                 delay='0ms', 
+                                 duration='%sms'%duration, 
+                                 conditioning_voltage=v_clamped,
+                                 testing_voltage=v_clamped,
+                                 return_voltage=v_clamped, 
+                                 simple_series_resistance="1e3ohm",
+                                 active = "1")
+
+            save_v['v_clamps_i_%s.dat'%l] = []
+            plot_v['IClamp_i_%s'%l] = []
+
+            for pop in ['popExc2']:
+
+                seg_id = 0
+
+                oc.add_inputs_to_population(network, "v_clamp_seg%s_%s_%s"%(seg_id,pop, l),
+                                            network.get_by_id(pop), vc.id,
+                                            all_cells=False,
+                                            only_cells=[cell_index],
+                                            segment_ids=[seg_id])
+
+                seg_id = 2953 # end of axon        
+
+                oc.add_inputs_to_population(network, "v_clamp_seg%s_%s_%s"%(seg_id,pop, l),
+                                            network.get_by_id(pop), vc.id,
+                                            all_cells=False,
+                                            only_cells=[cell_index],
+                                            segment_ids=[seg_id])     
+
+
                 # record at soma
-                q = '%s/%s/%s/%s/i'%(pop, i,network.get_by_id(pop).component,clamp_id)
-                save_v['v_clamps_i.dat'].append(q)
-                plot_v['IClamp_i'].append(q)
+                q = '%s/%s/%s/%s/i'%(pop, cell_index,network.get_by_id(pop).component,clamp_id)
+                save_v['v_clamps_i_%s.dat'%l].append(q)
+                plot_v['IClamp_i_%s'%l].append(q)
                                         
 
     #####   Save NeuroML and LEMS Simulation files      
@@ -689,7 +702,7 @@ if __name__ == '__main__':
     fraction_inh_pert_rng = [0.5]
     ee2_conn_prob = 0
     ie2_conn_prob = 0
-    exc_clamp = None
+    v_clamp = False
     #duration_clamp = 500
     
     if '-test' in sys.argv:  
@@ -719,9 +732,7 @@ if __name__ == '__main__':
         
         format='xml'
         
-        exc_clamp= {'popExc':[0]}
-        exc_clamp= {'popExc2':[0]}
-        exc_clamp= None
+        v_clamp= False
         exc_target_dendrites =True
         inh_target_dendrites = 1
         
@@ -769,14 +780,8 @@ if __name__ == '__main__':
     elif '-Detailed_Soma' in sys.argv:
         simtag = 'Detailed_Soma'
         
-        exc_clamp= {'popExc2':[0]}
-        exc_clamp = None
-        
-        percentage_exc_detailed = .5
-        exc_target_dendrites = 1
-        inh_target_dendrites = 1
-
-        exc_clamp= {'popExc2':[0]}
+        v_clamp = False
+        v_clamp = True
         
         r_bkg_ExtExc = 3e3+300
         r_bkg_ExtInh = 3e3
@@ -785,8 +790,13 @@ if __name__ == '__main__':
         Be_bkg = 0.5
         Be_stim = Be_bkg
 
-        fraction_inh_pert_rng = [0.95]
+        fraction_inh_pert_rng = [0.75]
+        
         scale_populations = 5
+        
+        percentage_exc_detailed = 2.5 #1.25
+        exc_target_dendrites = 1
+        inh_target_dendrites = 1
 
         connections = 0
         # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
@@ -995,7 +1005,7 @@ if __name__ == '__main__':
                     num_processors=num_processors,
                     exc_target_dendrites=exc_target_dendrites,
                     inh_target_dendrites=inh_target_dendrites,
-                    exc_clamp=exc_clamp)
+                    v_clamp=v_clamp)
 
             # --
             NI_pert = int(fraction_inh_pert*NI)
