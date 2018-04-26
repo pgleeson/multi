@@ -23,9 +23,9 @@ exc2_color = occ.L23_PRINCIPAL_CELL_2
 inh_color = occ.L23_INTERNEURON
 inh_color = occ.L23_INTERNEURON_2
 
-exc_color = '0 0 1'
+exc_color = '1 0 0'
 exc2_color = '0 1 0'
-inh_color = '1 0 0'
+inh_color = '0 0 0.9'
 inh2_color = '1 0 1'
 
 exc_inh_fraction = .8
@@ -142,20 +142,20 @@ def generate(scale_populations = 1,
 
     #####   Synapses
     
-    synAmpaEE = oc.add_exp_one_syn(nml_doc, id="synAmpaEE", gbase="%snS"%Bee,
+    synAmpaEE = oc.add_exp_one_syn(nml_doc, id="ampaEE", gbase="%snS"%Bee,
                              erev="0mV", tau_decay="1ms")
-    synAmpaEI = oc.add_exp_one_syn(nml_doc, id="synAmpaEI", gbase="%snS"%Bei,
+    synAmpaEI = oc.add_exp_one_syn(nml_doc, id="ampaEI", gbase="%snS"%Bei,
                              erev="0mV", tau_decay="1ms")
 
-    synGabaIE = oc.add_exp_one_syn(nml_doc, id="synGabaIE", gbase="%snS"%abs(Bie),
+    synGabaIE = oc.add_exp_one_syn(nml_doc, id="gabaIE", gbase="%snS"%abs(Bie),
                              erev="-80mV", tau_decay="1ms")
-    synGabaII = oc.add_exp_one_syn(nml_doc, id="synGabaII", gbase="%snS"%abs(Bii),
+    synGabaII = oc.add_exp_one_syn(nml_doc, id="gabaII", gbase="%snS"%abs(Bii),
                              erev="-80mV", tau_decay="1ms")
 
-    synAmpaBkg = oc.add_exp_one_syn(nml_doc, id="synAmpaBkg", gbase="%snS"%Be_bkg,
+    synAmpaBkg = oc.add_exp_one_syn(nml_doc, id="ampaBkg", gbase="%snS"%Be_bkg,
                              erev="0mV", tau_decay="1ms")
-    synAmpaStim = oc.add_exp_one_syn(nml_doc, id="synAmpaStim", gbase="%snS"%Be_stim,
-                             erev="0mV", tau_decay="1ms")
+    #synAmpaStim = oc.add_exp_one_syn(nml_doc, id="ampaStim", gbase="%snS"%Be_stim,
+    #                         erev="0mV", tau_decay="1ms")
                              
     #####   Input types
 
@@ -347,26 +347,26 @@ def generate(scale_populations = 1,
 
     #####   Inputs
 
-    oc.add_inputs_to_population(network, "Stim_pre_ExtExc_%s"%popExc.id,
+    oc.add_inputs_to_population(network, "Stim_E",
                                     popExc, tpfsExtExc.id,
                                     all_cells=True)
 
     num_inh_pert = int(popInh.get_size()*fraction_inh_pert)
 
-    oc.add_inputs_to_population(network, "Stim_I_nonpert_%s"%popInh.id,
+    oc.add_inputs_to_population(network, "Stim_I_nonpert",
                                     popInh, tpfsExtInh.id,
                                     all_cells=False,
                                     only_cells=range(num_inh_pert,popInh.get_size()))
 
-    oc.add_inputs_to_population(network, "Stim_I_pert_before_%s"%popInh.id,
+    oc.add_inputs_to_population(network, "Stim_I_pert_before",
                                     popInh, tpfsPertInh_before.id,
                                     all_cells=False,
                                     only_cells=range(0,num_inh_pert))  
-    oc.add_inputs_to_population(network, "Stim_I_pert_during_%s"%popInh.id,
+    oc.add_inputs_to_population(network, "Stim_I_pert_during",
                                     popInh, tpfsPertInh_during.id,
                                     all_cells=False,
                                     only_cells=range(0,num_inh_pert))
-    oc.add_inputs_to_population(network, "Stim_I_pert_after_%s"%popInh.id,
+    oc.add_inputs_to_population(network, "Stim_I_pert_after",
                                     popInh, tpfsPertInh_after.id,
                                     all_cells=False,
                                     only_cells=range(0,num_inh_pert))
@@ -441,36 +441,37 @@ def generate(scale_populations = 1,
                                  conditioning_voltage=v_clamped,
                                  testing_voltage=v_clamped,
                                  return_voltage=v_clamped, 
-                                 simple_series_resistance="1e3ohm",
+                                 simple_series_resistance="1e2ohm",
                                  active = "1")
 
-            save_v['v_clamps_i_%s.dat'%l] = []
-            plot_v['IClamp_i_%s'%l] = []
+            pop = 'popExc2'
+            plot = 'IClamp_i_%s'%(l)
+            
+            for seg_id in [0,2953, 1406]: # 2953: end of axon; 1406 on dendrite
 
-            for pop in ['popExc2']:
+                vc_dat_file = 'v_clamps_i_seg%s_%s.dat'%(seg_id,l)
+                seg_file = '%s_seg%s_%s_v.dat'%(pop,seg_id,l)
+                
+                save_v[vc_dat_file] = []
+                plot_v[plot] = []
 
-                seg_id = 0
-
-                oc.add_inputs_to_population(network, "v_clamp_seg%s_%s_%s"%(seg_id,pop, l),
-                                            network.get_by_id(pop), vc.id,
-                                            all_cells=False,
-                                            only_cells=[cell_index],
-                                            segment_ids=[seg_id])
-
-                seg_id = 2953 # end of axon        
-
-                oc.add_inputs_to_population(network, "v_clamp_seg%s_%s_%s"%(seg_id,pop, l),
+                oc.add_inputs_to_population(network, "vClamp_seg%s_%s"%(seg_id, l),
                                             network.get_by_id(pop), vc.id,
                                             all_cells=False,
                                             only_cells=[cell_index],
                                             segment_ids=[seg_id])     
 
-
                 # record at soma
-                q = '%s/%s/%s/%s/i'%(pop, cell_index,network.get_by_id(pop).component,clamp_id)
-                save_v['v_clamps_i_%s.dat'%l].append(q)
-                plot_v['IClamp_i_%s'%l].append(q)
-                                        
+                q = '%s/%s/%s/%s/%s/i'%(pop, cell_index,network.get_by_id(pop).component,seg_id,clamp_id)
+                
+                save_v[vc_dat_file].append(q)
+                plot_v[plot].append(q)
+                
+                if seg_id!=0:
+                    save_v[seg_file] = []
+                    q = '%s/%s/%s/%s/v'%(pop, cell_index,network.get_by_id(pop).component,seg_id)
+                    save_v[seg_file].append(q)
+                
 
     #####   Save NeuroML and LEMS Simulation files      
     
@@ -482,7 +483,7 @@ def generate(scale_populations = 1,
                     target_dir=target_dir)
         
     print("Saved to: %s"%nml_file_name)
-
+    
     if num_exc>0:
         exc_traces = '%s_%s_v.dat'%(network.id,popExc.id)
         save_v[exc_traces] = []
@@ -672,6 +673,7 @@ if __name__ == '__main__':
     
     run_in_simulator = None
     format = 'hdf5'
+    #format = 'xml'
 
     num_processors = 1
     if '-neuron' in sys.argv: 
