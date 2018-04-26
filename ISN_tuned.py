@@ -78,7 +78,8 @@ def generate(scale_populations = 1,
              run_in_simulator = None,
              num_processors = 1,
              target_dir='./temp/',
-             v_clamp=False):       
+             v_clamp=False,
+             simulation_seed=123456):       
                  
     reference = ("ISN_net%s"%(suffix)).replace('.','_')
     
@@ -428,7 +429,7 @@ def generate(scale_populations = 1,
     #
     if v_clamp:
         
-        levels = {'IPSC': synAmpaEE.erev, 'EPSP':synGabaIE.erev}
+        levels = {'IPSC': synAmpaEE.erev, 'EPSC':synGabaIE.erev}
         
         for l in levels:
             cell_index = levels.keys().index(l)
@@ -449,7 +450,8 @@ def generate(scale_populations = 1,
             
             for seg_id in [0,2953, 1406]: # 2953: end of axon; 1406 on dendrite
 
-                vc_dat_file = 'v_clamps_i_seg%s_%s.dat'%(seg_id,l)
+                vc_dat_file = 'v_clamps_i_seg%s_%s.%s.dat'%(seg_id,l,simulation_seed)
+                
                 seg_file = '%s_seg%s_%s_v.dat'%(pop,seg_id,l)
                 
                 save_v[vc_dat_file] = []
@@ -461,7 +463,7 @@ def generate(scale_populations = 1,
                                             only_cells=[cell_index],
                                             segment_ids=[seg_id])     
 
-                # record at soma
+                # record at seg
                 q = '%s/%s/%s/%s/%s/i'%(pop, cell_index,network.get_by_id(pop).component,seg_id,clamp_id)
                 
                 save_v[vc_dat_file].append(q)
@@ -534,7 +536,8 @@ def generate(scale_populations = 1,
                             gen_spike_saves_for_all_somas = gen_spike_saves_for_all_somas,
                             target_dir=target_dir,
                             include_extra_lems_files = ['./NoisyCurrentSource.xml'],
-                            report_file_name='report.txt')
+                            report_file_name='report.txt',
+                            simulation_seed=simulation_seed)
 
 
     if run_in_simulator:
@@ -719,6 +722,8 @@ if __name__ == '__main__':
     ie2_conn_prob = 0
     v_clamp = False
     #duration_clamp = 500
+    
+    simulation_seed = 12345678
 
     if '-test' in sys.argv:  
         simtag = 'test'
@@ -835,7 +840,8 @@ if __name__ == '__main__':
                                                     target_dir=target_dir,
                                                     suffix=suffix,
                                                     run_in_simulator=run_in_simulator,
-                                                    num_processors=num_processors)
+                                                    num_processors=num_processors,
+                                                    simulation_seed=simulation_seed)
 
             #
             T = Ttrans+Tblank+Tstim
@@ -907,7 +913,8 @@ if __name__ == '__main__':
                                                     target_dir=target_dir,
                                                     suffix=suffix,
                                                     run_in_simulator=run_in_simulator,
-                                                    num_processors=num_processors)
+                                                    num_processors=num_processors,
+                                                    simulation_seed=simulation_seed)
 
             #
             T = Ttrans+Tblank+Tstim
@@ -976,7 +983,8 @@ if __name__ == '__main__':
                     num_processors=num_processors,
                     exc_target_dendrites=exc_target_dendrites,
                     inh_target_dendrites=inh_target_dendrites,
-                    v_clamp=v_clamp)
+                    v_clamp=v_clamp,
+                    simulation_seed=simulation_seed)
 
             # --
             NI_pert = int(fraction_inh_pert*NI)
