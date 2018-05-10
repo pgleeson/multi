@@ -100,3 +100,7 @@
 /cells/SmithEtAl2013/analysis/LEMS_L23_Noisy.xml
 /cells/SmithEtAl2013/*.hoc
 /cells/SmithEtAl2013/*.mod
+/kernelseed
+/ISN-nest-EI-0.gdf
+/ISN_net.gv.pdf
+/ISN_net.gv

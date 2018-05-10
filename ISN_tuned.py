@@ -79,16 +79,21 @@ def generate(scale_populations = 1,
              num_processors = 1,
              target_dir='./temp/',
              v_clamp=False,
-             simulation_seed=123456):       
+             simulation_seed=11111):       
                  
     reference = ("ISN_net%s"%(suffix)).replace('.','_')
+    
+    ks = open('kernelseed','w')
+    ks.write('%i'%simulation_seed)
+    ks.close()
     
     info=('  Generating ISN network: %s\n'%reference)
     info+=('    Duration: %s; dt: %s; scale: %s; simulator: %s (num proc. %s)\n'%(duration, dt, scale_populations, run_in_simulator, num_processors))
     info+=('    Bee: %s; Bei: %s; Bie: %s; Bii: %s\n'%(Bee,Bei,Bie,Bii))
     info+=('    Be_bkg: %s at %sHz\n'%(Be_bkg,r_bkg))
     info+=('    Be_stim: %s at %sHz (i.e. %sHz for %s perturbed I cells)\n'%(Be_stim,r_stim, r_bkg+r_stim, fraction_inh_pert))
-    info+=('    Exc detailed: %s%% - Inh detailed %s%%'%(percentage_exc_detailed,percentage_inh_detailed))
+    info+=('    Exc detailed: %s%% - Inh detailed %s%%\n'%(percentage_exc_detailed,percentage_inh_detailed))
+    info+=('    Seed: %s'%(simulation_seed))
     
     print('-------------------------------------------------')
     print(info)
@@ -103,7 +108,7 @@ def generate(scale_populations = 1,
     num_inh2  = int(math.ceil(num_inh*percentage_inh_detailed/100.0))
     num_inh -= num_inh2
     
-    nml_doc, network = oc.generate_network(reference, network_seed=1234)
+    nml_doc, network = oc.generate_network(reference, network_seed=simulation_seed)
     nml_doc.notes=info
     network.notes=info
     
@@ -684,7 +689,7 @@ if __name__ == '__main__':
 
     if '-netpyne' in sys.argv: 
         run_in_simulator = 'jNeuroML_NetPyNE'
-        num_processors = 16 
+        num_processors = 12
     
     # ---
     # default values
@@ -693,7 +698,7 @@ if __name__ == '__main__':
     inh_exc_conn_prob = .5
     inh_inh_conn_prob = .5
     
-    Bee = .5
+    Bee = .47
     Bei = .5
     Bie = 1
     Bii = 1
@@ -712,7 +717,7 @@ if __name__ == '__main__':
     
     r_bkg_ExtExc = 3e3+300
     r_bkg_ExtInh = 3e3
-    r_stim = -100
+    r_stim = -200
 
     percentage_exc_detailed = 0
     exc_target_dendrites = 0
@@ -723,7 +728,11 @@ if __name__ == '__main__':
     v_clamp = False
     #duration_clamp = 500
     
-    simulation_seed = 12345678
+    simulation_seed = 5555
+    
+    for a in sys.argv:
+        if a.startswith('-seed:'):
+            simulation_seed = int(a[6:])
 
     if '-test' in sys.argv:  
         simtag = 'test'
