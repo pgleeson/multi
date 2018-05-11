@@ -689,7 +689,7 @@ if __name__ == '__main__':
 
     if '-netpyne' in sys.argv: 
         run_in_simulator = 'jNeuroML_NetPyNE'
-        num_processors = 12
+        num_processors = 10
     
     # ---
     # default values
@@ -698,7 +698,7 @@ if __name__ == '__main__':
     inh_exc_conn_prob = .5
     inh_inh_conn_prob = .5
     
-    Bee = .47
+    Bee = .48
     Bei = .5
     Bie = 1
     Bii = 1
