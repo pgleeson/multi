@@ -54,11 +54,14 @@ def generate(scale_populations = 1,
              Bei = .1,
              Bie = -.2,
              Bii = -.2,
+             Bee2 = 1,
+             Bie2 = -2,
              Be_bkg = .1,
              Be_stim = .1,
              r_bkg = 0,
              r_bkg_ExtExc=0,
              r_bkg_ExtInh=0,
+             r_bkg_ExtExc2=0,
              r_stim = 0,
              fraction_inh_pert=0.75,
              Ttrans = 500, # transitent time to discard the data (ms)
@@ -140,6 +143,7 @@ def generate(scale_populations = 1,
 
     xDim = 700*scalex
     yDim = 100*scaley
+    yDimExc2 = 50*scaley
     zDim = 700*scalez
 
     xs = -1*xDim/2
@@ -162,7 +166,12 @@ def generate(scale_populations = 1,
                              erev="0mV", tau_decay="1ms")
     #synAmpaStim = oc.add_exp_one_syn(nml_doc, id="ampaStim", gbase="%snS"%Be_stim,
     #                         erev="0mV", tau_decay="1ms")
-                             
+
+    synAmpaEE2 = oc.add_exp_one_syn(nml_doc, id="ampaEE2", gbase="%snS"%Bee2,
+                             erev="0mV", tau_decay="10ms")
+    synGabaIE2 = oc.add_exp_one_syn(nml_doc, id="gabaIE2", gbase="%snS"%abs(Bie2),
+                             erev="-80mV", tau_decay="10ms")
+
     #####   Input types
 
     '''tpfsA = oc.add_transient_poisson_firing_synapse(nml_doc,
@@ -192,6 +201,14 @@ def generate(scale_populations = 1,
                                        delay = '0ms', 
                                        duration = '%sms'%(Ttrans+Tblank+Tstim+Tpost),
                                        synapse_id=synAmpaBkg.id)
+    
+    tpfsExtExc2 = oc.add_transient_poisson_firing_synapse(nml_doc,
+                                       id="tpfsExtExc2",
+                                       average_rate="%s Hz"%r_bkg_ExtExc2,
+                                       delay = '0ms', 
+                                       duration = '%sms'%(Ttrans+Tblank+Tstim+Tpost),
+                                       synapse_id=synAmpaBkg.id)
+
     tpfsExtInh = oc.add_transient_poisson_firing_synapse(nml_doc,
                                        id="tpfsExtInh",
                                        average_rate="%s Hz"%r_bkg_ExtInh,
@@ -237,8 +254,8 @@ def generate(scale_populations = 1,
                                                   'popExc2',
                                                   exc2_cell_id,
                                                   num_exc2,
-                                                  xs,ys,zs,
-                                                  xDim,yDim,zDim,
+                                                  xs,yDim/2,zs,
+                                                  xDim,yDimExc2,zDim,
                                                   color=exc2_color)
         popExc2.properties.append(Property('type','E'))
                                                   
@@ -340,13 +357,13 @@ def generate(scale_populations = 1,
 
         proj = add_projection(network, "projEE2",
                                       popExc, popExc2,
-                                      synAmpaEE.id, ee2_conn_prob, 
+                                      synAmpaEE2.id, ee2_conn_prob, 
                                       global_delay,
                                       exc_target_dendrites,
                                       weight_expr)   
         proj = add_projection(network, "projIE2",
                                       popInh, popExc2,
-                                      synGabaIE.id, ie2_conn_prob, 
+                                      synGabaIE2.id, ie2_conn_prob, 
                                       global_delay,
                                       inh_target_dendrites,
                                       weight_expr)      
@@ -356,6 +373,11 @@ def generate(scale_populations = 1,
     oc.add_inputs_to_population(network, "Stim_E",
                                     popExc, tpfsExtExc.id,
                                     all_cells=True)
+
+    if num_exc2>0:
+        oc.add_inputs_to_population(network, "Stim_E2",
+                                        popExc2, tpfsExtExc2.id,
+                                        all_cells=True)
 
     num_inh_pert = int(popInh.get_size()*fraction_inh_pert)
 
@@ -693,15 +715,15 @@ if __name__ == '__main__':
     
     # ---
     # default values
-    exc_exc_conn_prob = 0.15
-    exc_inh_conn_prob = 0.15
-    inh_exc_conn_prob = .5
-    inh_inh_conn_prob = .5
+    exc_exc_conn_prob = 0.15 
+    exc_inh_conn_prob = 0.15 
+    inh_exc_conn_prob = .5  
+    inh_inh_conn_prob = .5  
     
-    Bee = .48
-    Bei = .5
-    Bie = 1
-    Bii = 1
+    Bee = .48 
+    Bei = .5 
+    Bie = 1 
+    Bii = 1 
 
     Be_stim = Be_bkg = 0.5
 
@@ -710,14 +732,15 @@ if __name__ == '__main__':
     Tstim = 500.
     Tpost = 500.
     
-    r_bkg_ExtExc=1
-    r_bkg_ExtInh=1
+    #r_bkg_ExtExc=1
+    #r_bkg_ExtInh=1
     r_bkg = 1
     dt = 0.025
     
-    r_bkg_ExtExc = 3e3+300
-    r_bkg_ExtInh = 3e3
-    r_stim = -200
+    r_bkg_ExtExc = 2.9e3+300
+    r_bkg_ExtInh = 2.9e3
+    r_stim = -180
+    r_bkg_ExtExc2 = 14e3
 
     percentage_exc_detailed = 0
     exc_target_dendrites = 0
@@ -728,7 +751,7 @@ if __name__ == '__main__':
     v_clamp = False
     #duration_clamp = 500
     
-    simulation_seed = 5555
+    simulation_seed = np.random.randint(1,5555)
     
     for a in sys.argv:
         if a.startswith('-seed:'):
@@ -802,8 +825,8 @@ if __name__ == '__main__':
         # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
         connections2 = 1
 
-        ee2_conn_prob = 4
-        ie2_conn_prob = 1
+        ee2_conn_prob = .1#4
+        ie2_conn_prob = 1#1
 
     N = scale_populations*100
     NE = int(exc_inh_fraction*N); NI=N-NE
@@ -969,6 +992,7 @@ if __name__ == '__main__':
                     r_stim = r_stim,
                     r_bkg_ExtExc=r_bkg_ExtExc,
                     r_bkg_ExtInh=r_bkg_ExtInh,
+                    r_bkg_ExtExc2=r_bkg_ExtExc2,
                     Ttrans = Ttrans,
                     Tblank= Tblank,
                     Tstim = Tstim,
