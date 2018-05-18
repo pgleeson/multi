@@ -460,22 +460,23 @@ def generate(scale_populations = 1,
         
         for l in levels:
             cell_index = levels.keys().index(l)
-            clamp_id = "vClamp_%s"%l
-            v_clamped = levels[l]
-
-            vc = oc.add_voltage_clamp_triple(nml_doc, id=clamp_id, 
-                                 delay='0ms', 
-                                 duration='%sms'%duration, 
-                                 conditioning_voltage=v_clamped,
-                                 testing_voltage=v_clamped,
-                                 return_voltage=v_clamped, 
-                                 simple_series_resistance="1e2ohm",
-                                 active = "1")
 
             pop = 'popExc2'
             plot = 'IClamp_i_%s'%(l)
             
             for seg_id in [0,2953, 1406]: # 2953: end of axon; 1406 on dendrite
+            
+                clamp_id = "vClamp_cell%s_seg%s_%s"%(cell_index,seg_id,l)
+                v_clamped = levels[l]
+
+                vc = oc.add_voltage_clamp_triple(nml_doc, id=clamp_id, 
+                                     delay='0ms', 
+                                     duration='%sms'%duration, 
+                                     conditioning_voltage=v_clamped,
+                                     testing_voltage=v_clamped,
+                                     return_voltage=v_clamped, 
+                                     simple_series_resistance="1e2ohm",
+                                     active = "1")
 
                 vc_dat_file = 'v_clamps_i_seg%s_%s.%s.dat'%(seg_id,l,simulation_seed)
                 
@@ -740,7 +741,7 @@ if __name__ == '__main__':
     r_bkg_ExtExc = 2.9e3+300
     r_bkg_ExtInh = 2.9e3
     r_stim = -180
-    r_bkg_ExtExc2 = 14e3
+    r_bkg_ExtExc2 = 20e3
 
     percentage_exc_detailed = 0
     exc_target_dendrites = 0
@@ -825,8 +826,8 @@ if __name__ == '__main__':
         # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
         connections2 = 1
 
-        ee2_conn_prob = .1#4
-        ie2_conn_prob = 1#1
+        ee2_conn_prob = .2#4
+        ie2_conn_prob = 1.5#1
 
     N = scale_populations*100
     NE = int(exc_inh_fraction*N); NI=N-NE

@@ -168,7 +168,7 @@ Tuning procedure metadata:
                 <channelDensityVShift id="Na_all" ionChannel="Na" condDensity="59.6748241295 mS_per_cm2" erev="49.8643035644 mV" ion="na" vShift="1.79919861049 mV"/>
                 <spikeThresh value="0 mV"/>
                 <specificCapacitance value="4.26782611524 uF_per_cm2"/>
-                <initMembPotential value="-80.0 mV"/>
+                <initMembPotential value="-60.0 mV"/>
             </membraneProperties>
             <intracellularProperties>
                 <resistivity value="100 ohm_cm"/>
