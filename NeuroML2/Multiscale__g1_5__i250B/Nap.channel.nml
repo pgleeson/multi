@@ -1,30 +1,32 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<neuroml xmlns="http://www.neuroml.org/schema/neuroml2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta4.xsd" id="Nap">
+<neuroml xmlns="http://www.neuroml.org/schema/neuroml2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta4.xsd" id="nap">
 
-    <notes>NeuroML file containing a single Channel description</notes>
+    <notes>ChannelML file based on Traub et al. 2003</notes>
 
-    <ionChannel id="Nap" conductance="10pS" type="ionChannelHH" species="na">
+    <ionChannel id="nap" conductance="10pS" type="ionChannelHH" species="na">
 
-        <notes>Persistent Na+ current
-Modified for Allen Institute cell models from Hay et al. 2011 version:
-- Form of conductance expression changed from: g = gbar * m^3 * h to: g = gbar * minf * h (comment in mod: assuming instantaneous activation as modeled by Magistretti and Alonso)
-- Added Q10 scaling to rate variables            
-
-Comment from original mod file: 
-:Comment : mtau deduced from text (said to be 6 times faster than for NaTa)
-:Comment : so I used the equations from NaT and multiplied by 6
-:Reference : Modeled according to kinetics derived from Magistretti and Alonso 1999
-:Comment: corrected rates using q10 = 2.3, target temperature 34, orginal 21</notes>
+        <notes>Persistent (non inactivating) Sodium channel. Based on NEURON port of FRB L2/3 model from Traub et al 2003. Same channel used in Traub et al 2005</notes>
                 
         <annotation>
             <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-                <rdf:Description rdf:about="Nap">
+                <rdf:Description rdf:about="nap">
                     
                     <bqmodel:isDescribedBy xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
                         <rdf:Bag>
-                            <rdf:li>Models of Neocortical Layer 5b Pyramidal Cells Capturing a Wide Range of Dendritic and Perisomatic Active Properties,
-            Etay Hay, Sean Hill, Felix Schürmann, Henry Markram and Idan Segev, PLoS Comp Biol 2011</rdf:li>
-                            <rdf:li rdf:resource="http://www.ncbi.nlm.nih.gov/pubmed/21829333"/>
+                            <rdf:li>Roger D. Traub, Eberhard H. Buhl, Tengis Gloveli, and Miles A. Whittington                
+Fast Rhythmic Bursting Can Be Induced in Layer 2/3 Cortical Neurons by Enhancing Persistent Na+ Conductance or by Blocking BK Channels
+J Neurophysiol 89: 909-921, 2003</rdf:li>
+                            <rdf:li rdf:resource="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&amp;db=pubmed&amp;dopt=Abstract&amp;list_uids=12574468"/>
+                        </rdf:Bag>
+                    </bqmodel:isDescribedBy>
+
+                
+                    <bqmodel:isDescribedBy xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Bag>
+                            <rdf:li>Roger D. Traub, Diego Contreras, Mark O. Cunningham, Hilary Murray, Fiona E. N. LeBeau, Anita Roopun, Andrea Bibbig, W. Bryan Wilent, Michael J. Higley, and Miles A. Whittington
+Single-column thalamocortical network model exhibiting gamma oscillations, sleep spindles, and epileptogenic bursts.
+J. Neurophysiol. 93, 2194-2232, 2005</rdf:li>
+                            <rdf:li rdf:resource="http://www.ncbi.nlm.nih.gov/pubmed/15525801?dopt=Abstract"/>
                         </rdf:Bag>
                     </bqmodel:isDescribedBy>
 
@@ -32,7 +34,7 @@ Comment from original mod file:
                     <bqbiol:isVersionOf xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
                         <rdf:Bag>
                             <rdf:li>Na channels</rdf:li>
-                            <rdf:li rdf:resource="http://senselab.med.yale.edu/neurondb/channelGene2.aspx#table2"/>
+                            <rdf:li rdf:resource="http://senselab.med.yale.edu/senselab/NeuronDB/channelGene2.htm#table2"/>
                         </rdf:Bag>
                     </bqbiol:isVersionOf>
 
@@ -40,18 +42,25 @@ Comment from original mod file:
             </rdf:RDF>
         </annotation>
 
-        <gate id="m" type="gateHHInstantaneous" instances="1">
-            <steadyState type="HHSigmoidVariable" rate="1" scale="4.6mV" midpoint="-52.6mV"/>
-        </gate>
-
-        <gate id="h" type="gateHHratesInf" instances="1">
-            <q10Settings type="q10ExpTemp" q10Factor="2.3" experimentalTemp="21 degC"/>
-            <forwardRate type="HHExpLinearRate" rate="1.33344e-05per_ms" scale="-4.63mV" midpoint="-17mV"/>
-            <reverseRate type="HHExpLinearRate" rate="1.82522e-05per_ms" scale="2.63mV" midpoint="-64.4mV"/>
-            <steadyState type="HHSigmoidVariable" rate="1" scale="-10mV" midpoint="-48.8mV"/>
+        <gate id="m" type="gateHHtauInf" instances="1">
+            <timeCourse type="nap_m_tau_tau"/>
+            <steadyState type="HHSigmoidVariable" rate="1" scale="10mV" midpoint="-48mV"/>
         </gate>
                             
     </ionChannel>
 
+    <ComponentType name="nap_m_tau_tau" extends="baseVoltageDepTime">
+        <Constant name="TIME_SCALE" dimension="time" value="1 ms"/>
+        <Constant name="VOLT_SCALE" dimension="voltage" value="1 mV"/>
+
+        <Dynamics>
+            <DerivedVariable name="V" dimension="none" value="v / VOLT_SCALE"/>
+            <ConditionalDerivedVariable name="t" exposure="t" dimension="time">
+                <Case condition="V  .lt. ( -40 )" value="( 0.025 + 0.14 * (exp (( V + 40 )/10)) ) * TIME_SCALE"/>
+                <Case value="( 0.02 + 0.145 * (exp (-1 * (V + 40)/ 10))) * TIME_SCALE"/>
+            </ConditionalDerivedVariable>
+        </Dynamics>
+
+    </ComponentType>
 
 </neuroml>
