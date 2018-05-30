@@ -40,7 +40,7 @@
 /NeuroML2/LEMS_Multiscale__g1_5__i250B2_netpyne.py_main.json
 /NeuroML2/LEMS_Multiscale__g1_5__i250B_netpyne.py
 /NeuroML2/LEMS_Multiscale__g1_5__i250B_netpyne.py_main.json
-/old
+/old*
 /notebooks/L23PyrRS.cell.json
 /notebooks/input_*.json
 /NeuroML2/LEMS_*_netpyne.py
@@ -106,3 +106,6 @@
 /ISN_net.gv
 /runall.sh
 /runall2.sh
+/tweakce.txt
+/__pycache__
+/*.pyc

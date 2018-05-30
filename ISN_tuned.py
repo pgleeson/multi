@@ -30,6 +30,46 @@ inh2_color = '1 0 1'
 
 exc_inh_fraction = .8
 
+
+
+# ---
+# default values
+exc_exc_conn_prob = 0.15 
+exc_inh_conn_prob = 0.15 
+inh_exc_conn_prob = .5  
+inh_inh_conn_prob = .5  
+
+Bee = .6
+Bei = .5
+Bie = 1 
+Bii = 1 
+
+Be_stim = Be_bkg = 0.5
+
+Ttrans = 500.
+Tblank = 500. 
+Tstim = 500.
+Tpost = 500.
+
+#r_bkg_ExtExc=1
+#r_bkg_ExtInh=1
+r_bkg = 1
+dt = 0.025
+
+r_bkg_ExtExc = 4000
+r_bkg_ExtInh = 3600
+r_stim = -180
+r_bkg_ExtExc2 = 20e3
+
+percentage_exc_detailed = 0
+exc_target_dendrites = 0
+inh_target_dendrites = 0
+fraction_inh_pert_rng = [0.5]
+ee2_conn_prob = 0
+ie2_conn_prob = 0
+v_clamp = False
+#duration_clamp = 500
+
 def scale_pop_size(baseline, scale):
     return max(min_pop_size, int(baseline*scale))
 
@@ -93,8 +133,9 @@ def generate(scale_populations = 1,
     info=('  Generating ISN network: %s\n'%reference)
     info+=('    Duration: %s; dt: %s; scale: %s; simulator: %s (num proc. %s)\n'%(duration, dt, scale_populations, run_in_simulator, num_processors))
     info+=('    Bee: %s; Bei: %s; Bie: %s; Bii: %s\n'%(Bee,Bei,Bie,Bii))
-    info+=('    Be_bkg: %s at %sHz\n'%(Be_bkg,r_bkg))
-    info+=('    Be_stim: %s at %sHz (i.e. %sHz for %s perturbed I cells)\n'%(Be_stim,r_stim, r_bkg+r_stim, fraction_inh_pert))
+    info+=('    Bkg exc at %sHz\n'%(r_bkg_ExtExc))
+    info+=('    Bkg inh at %sHz\n'%(r_bkg_ExtInh))
+    info+=('    Be_stim: %s at %sHz (i.e. %sHz for %s perturbed I cells)\n'%(Be_stim,r_stim, r_bkg_ExtInh+r_stim, fraction_inh_pert))
     info+=('    Exc detailed: %s%% - Inh detailed %s%%\n'%(percentage_exc_detailed,percentage_inh_detailed))
     info+=('    Seed: %s'%(simulation_seed))
     
@@ -158,9 +199,9 @@ def generate(scale_populations = 1,
                              erev="0mV", tau_decay="1ms")
 
     synGabaIE = oc.add_exp_one_syn(nml_doc, id="gabaIE", gbase="%snS"%abs(Bie),
-                             erev="-80mV", tau_decay="1ms")
+                             erev="-80mV", tau_decay="2ms")
     synGabaII = oc.add_exp_one_syn(nml_doc, id="gabaII", gbase="%snS"%abs(Bii),
-                             erev="-80mV", tau_decay="1ms")
+                             erev="-80mV", tau_decay="2ms")
 
     synAmpaBkg = oc.add_exp_one_syn(nml_doc, id="ampaBkg", gbase="%snS"%Be_bkg,
                              erev="0mV", tau_decay="1ms")
@@ -466,7 +507,7 @@ def generate(scale_populations = 1,
             
             for seg_id in [0,2953, 1406]: # 2953: end of axon; 1406 on dendrite
             
-                clamp_id = "vClamp_cell%s_seg%s_%s"%(cell_index,seg_id,l)
+                clamp_id = "vclamp_cell%s_seg%s_%s"%(cell_index,seg_id,l)
                 v_clamped = levels[l]
 
                 vc = oc.add_voltage_clamp_triple(nml_doc, id=clamp_id, 
@@ -485,7 +526,7 @@ def generate(scale_populations = 1,
                 save_v[vc_dat_file] = []
                 plot_v[plot] = []
 
-                oc.add_inputs_to_population(network, "vClamp_seg%s_%s"%(seg_id, l),
+                oc.add_inputs_to_population(network, "vclamp_seg%s_%s"%(seg_id, l),
                                             network.get_by_id(pop), vc.id,
                                             all_cells=False,
                                             only_cells=[cell_index],
@@ -699,6 +740,64 @@ def _plot_(X, E, I, sbplt=111, ttl=[]):
     ax.set_yticks(range(0,len(I))); ax.set_yticklabels(I)
     pl.colorbar()
 
+def run_one(**kwargs):
+    
+    print('============================================================= \n     run_one: %s'%kwargs)
+    
+    format = 'hdf5'
+    #format = 'xml'
+
+    run_in_simulator = 'jNeuroML_NetPyNE'
+    num_processors = 16
+    
+    simtag = 'AllenCells'
+
+    fraction_inh_pert = 0.9
+    scale_populations = 10 #x100 total N
+
+    connections = 1
+    # recurrent connection between exc-inh + extra connections from exc and inh pops to exc2
+    connections2 = 0
+    
+    suffix = '';#str(int(fraction_inh_pert*100))
+    target_dir = './';
+        
+    generate(Bee = kwargs['Bee'],
+                    Bei = kwargs['Bei'],
+                    Bie = kwargs['Bie'],
+                    Bii = kwargs['Bii'],
+                    Be_bkg = Be_bkg,
+                    Be_stim = Be_stim,
+                    r_bkg = 0,
+                    r_stim = kwargs['r_stim'],
+                    r_bkg_ExtExc=kwargs['r_bkg_ExtExc'],
+                    r_bkg_ExtInh=kwargs['r_bkg_ExtInh'],
+                    r_bkg_ExtExc2=r_bkg_ExtExc2,
+                    Ttrans = Ttrans,
+                    Tblank= Tblank,
+                    Tstim = Tstim,
+                    Tpost = Tpost,
+                    exc_exc_conn_prob = exc_exc_conn_prob,
+                    exc_inh_conn_prob = exc_inh_conn_prob,
+                    inh_exc_conn_prob = inh_exc_conn_prob,
+                    inh_inh_conn_prob = inh_inh_conn_prob,
+                    ee2_conn_prob = ee2_conn_prob,
+                    ie2_conn_prob = ie2_conn_prob,
+                    connections=connections, connections2=connections2,
+                    fraction_inh_pert=fraction_inh_pert,
+                    duration = Ttrans+Tblank+Tstim+Tpost,
+                    dt = kwargs['dt'],
+                    scale_populations=scale_populations,
+                    format=format,
+                    percentage_exc_detailed=percentage_exc_detailed,
+                    target_dir=target_dir,
+                    suffix=suffix,
+                    run_in_simulator=run_in_simulator,
+                    num_processors=num_processors,
+                    exc_target_dendrites=exc_target_dendrites,
+                    inh_target_dendrites=inh_target_dendrites,
+                    v_clamp=v_clamp,
+                    simulation_seed=kwargs['simulation_seed'])
 
 if __name__ == '__main__':
     
@@ -714,43 +813,6 @@ if __name__ == '__main__':
         run_in_simulator = 'jNeuroML_NetPyNE'
         num_processors = 10
     
-    # ---
-    # default values
-    exc_exc_conn_prob = 0.15 
-    exc_inh_conn_prob = 0.15 
-    inh_exc_conn_prob = .5  
-    inh_inh_conn_prob = .5  
-    
-    Bee = .48 
-    Bei = .5 
-    Bie = 1 
-    Bii = 1 
-
-    Be_stim = Be_bkg = 0.5
-
-    Ttrans = 500.
-    Tblank = 500. 
-    Tstim = 500.
-    Tpost = 500.
-    
-    #r_bkg_ExtExc=1
-    #r_bkg_ExtInh=1
-    r_bkg = 1
-    dt = 0.025
-    
-    r_bkg_ExtExc = 2.9e3+300
-    r_bkg_ExtInh = 2.9e3
-    r_stim = -180
-    r_bkg_ExtExc2 = 20e3
-
-    percentage_exc_detailed = 0
-    exc_target_dendrites = 0
-    inh_target_dendrites = 0
-    fraction_inh_pert_rng = [0.5]
-    ee2_conn_prob = 0
-    ie2_conn_prob = 0
-    v_clamp = False
-    #duration_clamp = 500
     
     simulation_seed = np.random.randint(1,5555)
     
@@ -978,6 +1040,10 @@ if __name__ == '__main__':
 
         fl = open(target_dir+'rheobase__'+sim_id+'.res', 'wb'); pickle.dump(results, fl); fl.close()
 
+    elif '-perturbation0' in sys.argv:
+        
+        run_one()
+        
     elif '-perturbation' in sys.argv:
         results = {}
         for fraction_inh_pert in fraction_inh_pert_rng:
