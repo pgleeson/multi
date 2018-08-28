@@ -109,3 +109,5 @@
 /tweakce.txt
 /__pycache__
 /*.pyc
+ref
+/runallH.sh
